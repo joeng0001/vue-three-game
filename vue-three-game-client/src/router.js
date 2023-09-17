@@ -1,6 +1,9 @@
 import { createWebHistory, createRouter } from "vue-router";
 import Entry from "@/pages/Entry.vue";
 import HelloWorld from "@/pages/HelloWorld.vue";
+import GameMode from "@/components/Entry/GameMode.vue";
+import GameLevel from "@/components/Entry/GameLevel.vue";
+
 const routes = [
   {
     path: "/",
@@ -9,6 +12,16 @@ const routes = [
   {
     path: "/entry",
     component: Entry,
+    children: [
+      {
+        path: "gameMode",
+        component: GameMode,
+      },
+      {
+        path: "gameLevel",
+        component: GameLevel,
+      },
+    ],
   },
   {
     path: "/:catchAll(.*)",

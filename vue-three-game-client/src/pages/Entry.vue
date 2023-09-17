@@ -4,7 +4,11 @@
     <button @click="removeId">remove </button>
     <div>{{ this.$store.state.userID }}</div>
     <v-btn>vuetify</v-btn> -->
-    <canvas ref="three"></canvas>
+    <div>
+        <canvas ref="three"></canvas>
+        <router-view></router-view>
+
+    </div>
 </template>
 
 <script>
@@ -46,24 +50,44 @@ export default {
         // const pointLight = new THREE.PointLight(0xffffff, 200);
         // scene.add(pointLight);
 
-        const cubeTextureLoader = new THREE.CubeTextureLoader();
-        cubeTextureLoader.load([
-            starsTexture,
-            starsTexture,
-            starsTexture,
-            starsTexture,
-            starsTexture,
-            starsTexture
-        ], function (texture) {
-            console.log("texture load successfully")
-            // Texture loaded successfully
-            scene.background = texture;
-        }, undefined, function (error) {
-            // Error occurred while loading textures
-            console.error('Error loading textures:', error);
-        });
+        // const cubeTextureLoader = new THREE.CubeTextureLoader();
+        // cubeTextureLoader.load([
+        //     starsTexture,
+        //     starsTexture,
+        //     starsTexture,
+        //     starsTexture,
+        //     starsTexture,
+        //     starsTexture
+        // ], function (texture) {
+        //     console.log("texture load successfully")
+        //     // Texture loaded successfully
+        //     scene.background = texture;
+        // }, undefined, function (error) {
+        //     // Error occurred while loading textures
+        //     console.error('Error loading textures:', error);
+        // });
+
+        // const dLight = new THREE.DirectionalLight(0xFFFFFF, 1);
+        // scene.add(dLight);
+        // const dLightHelper = new THREE.DirectionalLightHelper(dLight)
+        // scene.add(dLightHelper);
+
+        // const dLightShadowHelper = new THREE.CameraHelper(dLight.shadow.camera)
+        // scene.add(dLightShadowHelper);
 
 
+        const textureLoader = new THREE.TextureLoader()
+
+
+        scene.background = textureLoader.load(starsTexture)
+        const spotLight = new THREE.SpotLight(0xffffff, 0.9, 0, Math.PI / 8, 1)
+        spotLight.position.set(-30, 40, 30)
+        spotLight.target.position.set(0, 0, 0)
+        spotLight.angle = 0.2
+        scene.add(spotLight)
+
+        const spotLightHelper = new THREE.SpotLightHelper(spotLight)
+        scene.add(spotLightHelper)
 
 
         const gltfLoader = new GLTFLoader();
