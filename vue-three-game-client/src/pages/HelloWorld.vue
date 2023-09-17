@@ -9,7 +9,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-import starsTexture from '@/assets/img/stars.jpg';
+import starsTexture from '@/assets/img/earth.jpg';
 import sunTexture from '@/assets/img/sun.jpg';
 import mercuryTexture from '@/assets/img/mercury.jpg';
 import venusTexture from '@/assets/img/venus.jpg';
