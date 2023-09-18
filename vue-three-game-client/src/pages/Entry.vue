@@ -16,7 +16,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import starsTexture from '@/assets/stars.jpg';
-
+import sunTexture from '@/assets/img/sun.jpg'
 import gsap from 'gsap'
 export default {
     mounted() {
@@ -41,8 +41,8 @@ export default {
         camera.position.set(-1.8, 1.6, 5);
         camera.lookAt(0, 0, 0);
 
-        const axesHelper = new THREE.AxesHelper(100); // 5 represent the length of axis
-        scene.add(axesHelper);// add the help to the scene
+        const axesHelper = new THREE.AxesHelper(100);
+        scene.add(axesHelper);
 
         // const ambient = new THREE.AmbientLight(0xffffff, 3);
         // scene.add(ambient);
@@ -75,8 +75,15 @@ export default {
         // const dLightShadowHelper = new THREE.CameraHelper(dLight.shadow.camera)
         // scene.add(dLightShadowHelper);
 
-
         const textureLoader = new THREE.TextureLoader()
+        const sunGeo = new THREE.SphereGeometry(16, 30, 30);
+        const sunMat = new THREE.MeshBasicMaterial({
+            map: textureLoader.load(sunTexture)
+        });
+        const sun = new THREE.Mesh(sunGeo, sunMat);
+        scene.add(sun);
+        sun.position.set(-100, -100, -100)
+
 
 
         scene.background = textureLoader.load(starsTexture)
@@ -95,7 +102,7 @@ export default {
         renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
-        let position = 0;
+
 
         gltfLoader.load(spaceUrl.href, function (gltf) {
             const model = gltf.scene;
@@ -108,65 +115,67 @@ export default {
         gltfLoader.load(spaceStationUrl.href, function (gltf) {
             const model = gltf.scene;
             scene.add(model);
-
-            // window.addEventListener('click', function () {
-            //     switch (position) {
-            //         case 0:
-            //             moveCamera(0, 0, 0);
-            //             rotateCamera(0, 0.1, 0);
-            //             position = 1;
-            //             break;
-            //         case 1:
-            //             moveCamera(2.8, 0, 3.6);
-            //             rotateCamera(0, -2, 0);
-            //             position = 2;
-            //             break;
-            //         case 2:
-            //             moveCamera(2.5, -0.9, 12.2);
-            //             rotateCamera(0.9, 0.6, -0.6);
-            //             position = 3;
-            //             break;
-            //         case 3:
-            //             moveCamera(-2.7, 0.6, 3.7);
-            //             rotateCamera(0.6, 1.9, -0.6);
-            //             position = 4;
-            //             break;
-            //         case 4:
-            //             moveCamera(-1.7, 0, 8.7);
-            //             rotateCamera(0, 4.7, 0);
-            //             position = 5;
-            //             break;
-            //         case 5:
-            //             moveCamera(0.5, 0.8, 10);
-            //             rotateCamera(0.3, 1.65, -0.3);
-            //             position = 0;
-            //     }
-
-            // });
-
-            function moveCamera(x, y, z) {
-                gsap.to(camera.position, {
-                    x,
-                    y,
-                    z,
-                    duration: 3
-                });
-            }
-
-            function rotateCamera(x, y, z) {
-                gsap.to(camera.rotation, {
-                    x,
-                    y,
-                    z,
-                    duration: 3.2
-                });
-            }
         });
 
-        //const clock = new THREE.Clock();
+        let position = 0;
+        function moving() {
+            switch (position) {
+                case 0:
+                    moveCamera(10, 10, 10);
+                    lookAtOrigin();
+                    position = 1;
+                    break;
+                case 1:
+                    moveCamera(2.8, 0, 3.6);
+                    lookAtOrigin();
+                    position = 2;
+                    break;
+                case 2:
+                    moveCamera(2.5, -0.9, 12.2);
+                    lookAtOrigin();
+                    position = 3;
+                    break;
+                case 3:
+                    moveCamera(-2.7, 0.6, 3.7);
+                    lookAtOrigin();
+                    position = 4;
+                    break;
+                case 4:
+                    moveCamera(-1.7, 0, 8.7);
+                    lookAtOrigin();
+                    position = 5;
+                    break;
+                case 5:
+                    moveCamera(0.5, 0.8, 10);
+                    lookAtOrigin();
+                    position = 0;
+            }
+
+        };
+
+        function moveCamera(x, y, z) {
+            gsap.to(camera.position, {
+                x,
+                y,
+                z,
+                duration: 3
+            });
+        }
+
+        function lookAtOrigin() {
+            gsap.to({}, {
+                duration: 3,
+                onUpdate: () => {
+                    camera.lookAt(0, 0, 0);
+                }
+            });
+        }
+
+        // setInterval(() => {
+        //     moving()
+        // }, 3000)
         function animate() {
             renderer.render(scene, camera);
-            //controls.update(clock.getDelta());
         }
 
         renderer.setAnimationLoop(animate);

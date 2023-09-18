@@ -6,14 +6,32 @@
                 <span></span>
                 <span></span>
                 <span></span>
-                Pick A Scene
+                Pick A Level
             </v-card-title>
 
             <!--after pick the scene,move the camera the the game scenario-->
             <v-card-actions class="d-flex justify-space-between mt-4">
-                <v-btn class="btn" style="color:Aquamarine;">Universe</v-btn>
-                <v-btn class="btn" style="color:GreenYellow;">Earth</v-btn>
-                <v-btn class="btn" style="color:orange;">Mars</v-btn>
+                <v-container>
+                    <v-row>
+                        <v-col cols="4">
+                            <v-btn class="btn" style="color:Aquamarine;">1</v-btn>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-btn class="btn" style="color:GreenYellow;">2</v-btn>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-btn class="btn" style="color:orange;">3</v-btn>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-btn class="btn" style="color:orange;">4</v-btn>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-btn class="btn" style="color:orange;">5</v-btn>
+                        </v-col>
+                    </v-row>
+                </v-container>
+
+
             </v-card-actions>
         </v-card>
     </v-dialog>
