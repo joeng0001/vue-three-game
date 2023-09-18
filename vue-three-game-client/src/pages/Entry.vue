@@ -22,8 +22,9 @@ export default {
     mounted() {
 
         const spaceStationUrl = new URL('@/assets/space_station_3.glb', import.meta.url)
-        const spaceUrl = new URL('@/assets/space.glb', import.meta.url)
+        const galaxyUrl = new URL('@/assets/galaxy.glb', import.meta.url)
         const asteroidUrl = new URL('@/assets/asteroid.glb', import.meta.url)
+        const solarSystemUrl = new URL('@/assets/solarSystem.glb', import.meta.url)
 
         const scene = new THREE.Scene();
         const canvas = this.$refs.three
@@ -77,13 +78,13 @@ export default {
         // scene.add(dLightShadowHelper);
 
         const textureLoader = new THREE.TextureLoader()
-        const sunGeo = new THREE.SphereGeometry(16, 30, 30);
-        const sunMat = new THREE.MeshBasicMaterial({
-            map: textureLoader.load(sunTexture)
-        });
-        const sun = new THREE.Mesh(sunGeo, sunMat);
-        scene.add(sun);
-        sun.position.set(-100, -100, -100)
+        // const sunGeo = new THREE.SphereGeometry(16, 30, 30);
+        // const sunMat = new THREE.MeshBasicMaterial({
+        //     map: textureLoader.load(sunTexture)
+        // });
+        // const sun = new THREE.Mesh(sunGeo, sunMat);
+        // scene.add(sun);
+        // sun.position.set(-100, -100, -100)
 
 
 
@@ -105,7 +106,7 @@ export default {
 
 
 
-        gltfLoader.load(spaceUrl.href, function (gltf) {
+        gltfLoader.load(galaxyUrl.href, function (gltf) {
             const model = gltf.scene;
             scene.add(model);
 
@@ -125,7 +126,11 @@ export default {
             });
 
         }
-
+        gltfLoader.load(solarSystemUrl.href, function (gltf) {
+            const model = gltf.scene;
+            scene.add(model);
+            model.position.set(-100, -100, 100)
+        });
 
 
         let position = 0;
