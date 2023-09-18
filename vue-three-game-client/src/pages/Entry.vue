@@ -23,6 +23,7 @@ export default {
 
         const spaceStationUrl = new URL('@/assets/space_station_3.glb', import.meta.url)
         const spaceUrl = new URL('@/assets/space.glb', import.meta.url)
+        const asteroidUrl = new URL('@/assets/asteroid.glb', import.meta.url)
 
         const scene = new THREE.Scene();
         const canvas = this.$refs.three
@@ -44,11 +45,11 @@ export default {
         const axesHelper = new THREE.AxesHelper(100);
         scene.add(axesHelper);
 
-        // const ambient = new THREE.AmbientLight(0xffffff, 3);
-        // scene.add(ambient);
+        const ambient = new THREE.AmbientLight(0xFFFFFF, 1);
+        scene.add(ambient);
 
-        // const pointLight = new THREE.PointLight(0xffffff, 200);
-        // scene.add(pointLight);
+        const pointLight = new THREE.PointLight(0xffffff, 200);
+        scene.add(pointLight);
 
         // const cubeTextureLoader = new THREE.CubeTextureLoader();
         // cubeTextureLoader.load([
@@ -116,6 +117,16 @@ export default {
             const model = gltf.scene;
             scene.add(model);
         });
+        for (let i = 0; i < 10; i++) {
+            gltfLoader.load(asteroidUrl.href, function (gltf) {
+                const model = gltf.scene;
+                scene.add(model);
+                model.position.set(Math.random() * (100 - -100) + -100, Math.random() * (100 - -100) + -100, Math.random() * (100 - -100) + -100)
+            });
+
+        }
+
+
 
         let position = 0;
         function moving() {
