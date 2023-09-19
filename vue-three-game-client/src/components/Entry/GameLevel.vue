@@ -51,10 +51,9 @@ export default {
 
 <style scoped>
 .btn {
-    background-color: lightgray;
+    background-color: rgba(224, 223, 223, 0.5);
     font-weight: 700;
     font-size: 30px;
-    border: 2px solid Magenta;
 }
 
 .SceneTitle {

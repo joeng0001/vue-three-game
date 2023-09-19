@@ -46,58 +46,15 @@ export default {
         const axesHelper = new THREE.AxesHelper(100);
         scene.add(axesHelper);
 
-        const ambient = new THREE.AmbientLight(0xFFFFFF, 1);
+        const ambient = new THREE.AmbientLight(0xFFFFFF, 0.1);
         scene.add(ambient);
 
-        const pointLight = new THREE.PointLight(0xffffff, 200);
-        scene.add(pointLight);
 
-        // const cubeTextureLoader = new THREE.CubeTextureLoader();
-        // cubeTextureLoader.load([
-        //     starsTexture,
-        //     starsTexture,
-        //     starsTexture,
-        //     starsTexture,
-        //     starsTexture,
-        //     starsTexture
-        // ], function (texture) {
-        //     console.log("texture load successfully")
-        //     // Texture loaded successfully
-        //     scene.background = texture;
-        // }, undefined, function (error) {
-        //     // Error occurred while loading textures
-        //     console.error('Error loading textures:', error);
-        // });
-
-        // const dLight = new THREE.DirectionalLight(0xFFFFFF, 1);
-        // scene.add(dLight);
-        // const dLightHelper = new THREE.DirectionalLightHelper(dLight)
-        // scene.add(dLightHelper);
-
-        // const dLightShadowHelper = new THREE.CameraHelper(dLight.shadow.camera)
-        // scene.add(dLightShadowHelper);
-
-        const textureLoader = new THREE.TextureLoader()
-        // const sunGeo = new THREE.SphereGeometry(16, 30, 30);
-        // const sunMat = new THREE.MeshBasicMaterial({
-        //     map: textureLoader.load(sunTexture)
-        // });
-        // const sun = new THREE.Mesh(sunGeo, sunMat);
-        // scene.add(sun);
-        // sun.position.set(-100, -100, -100)
-
-
-
-        scene.background = textureLoader.load(starsTexture)
         const spotLight = new THREE.SpotLight(0xffffff, 0.9, 0, Math.PI / 8, 1)
         spotLight.position.set(-30, 40, 30)
         spotLight.target.position.set(0, 0, 0)
         spotLight.angle = 0.2
         scene.add(spotLight)
-
-        const spotLightHelper = new THREE.SpotLightHelper(spotLight)
-        scene.add(spotLightHelper)
-
 
         const gltfLoader = new GLTFLoader();
 
@@ -111,6 +68,8 @@ export default {
             scene.add(model);
 
             model.position.set(0, 0, 0)
+            model.scale.set(500, 500, 500)
+
         });
 
 
@@ -129,42 +88,43 @@ export default {
         gltfLoader.load(solarSystemUrl.href, function (gltf) {
             const model = gltf.scene;
             scene.add(model);
-            model.position.set(-100, -100, 100)
+            model.position.set(-50, -50, -50)
+
         });
 
 
-        let position = 0;
+        let pos = 0;
         function moving() {
-            switch (position) {
+            switch (pos) {
                 case 0:
                     moveCamera(10, 10, 10);
-                    lookAtOrigin();
-                    position = 1;
+                    rotateCamera(0, 1, 0)
+                    pos = 1;
                     break;
                 case 1:
-                    moveCamera(2.8, 0, 3.6);
-                    lookAtOrigin();
-                    position = 2;
+                    moveCamera(100, -40, 200);
+                    rotateCamera(0, 1, 0)
+                    pos = 2;
                     break;
                 case 2:
-                    moveCamera(2.5, -0.9, 12.2);
-                    lookAtOrigin();
-                    position = 3;
+                    moveCamera(70, -20, 30);
+                    rotateCamera(1, -2, 0)
+                    pos = 3;
                     break;
                 case 3:
-                    moveCamera(-2.7, 0.6, 3.7);
-                    lookAtOrigin();
-                    position = 4;
+                    moveCamera(-100, 20, 140);
+                    rotateCamera(-0, -1, -3)
+                    pos = 4;
                     break;
                 case 4:
-                    moveCamera(-1.7, 0, 8.7);
-                    lookAtOrigin();
-                    position = 5;
+                    moveCamera(100, 50, -120);
+                    rotateCamera(1, 0, 2)
+                    pos = 5;
                     break;
                 case 5:
-                    moveCamera(0.5, 0.8, 10);
-                    lookAtOrigin();
-                    position = 0;
+                    moveCamera(10, 10, 10);
+                    lookAt(0, 0, 0);
+                    pos = 0;
             }
 
         };
@@ -174,22 +134,34 @@ export default {
                 x,
                 y,
                 z,
-                duration: 3
+                duration: 5
             });
         }
 
-        function lookAtOrigin() {
+        function lookAt(x, y, z) {
             gsap.to({}, {
-                duration: 3,
+                duration: 5,
                 onUpdate: () => {
-                    camera.lookAt(0, 0, 0);
+                    camera.lookAt(x, y, z);
                 }
             });
         }
 
-        // setInterval(() => {
-        //     moving()
-        // }, 3000)
+        function rotateCamera(x, y, z) {
+            gsap.to(camera.rotation, {
+                x,
+                y,
+                z,
+                duration: 5
+            });
+        }
+
+        const interval = setInterval(() => {
+            moving()
+        }, 5000)
+        window.addEventListener('contextmenu', function () {
+            clearInterval(interval)
+        });
         function animate() {
             renderer.render(scene, camera);
         }

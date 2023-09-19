@@ -11,9 +11,10 @@
 
             <!--after pick the scene,move the camera the the game scenario-->
             <v-card-actions class="d-flex justify-space-between mt-4">
-                <v-btn class="btn" style="color:Aquamarine;">Universe</v-btn>
-                <v-btn class="btn" style="color:GreenYellow;">Earth</v-btn>
-                <v-btn class="btn" style="color:orange;">Mars</v-btn>
+                <v-btn class="btn" style="color:Aquamarine;"
+                    @click="() => $router.push('/Entry/gameLevel')">Universe</v-btn>
+                <v-btn class="btn" style="color:GreenYellow;" @click="() => $router.push('/Entry/gameLevel')">Earth</v-btn>
+                <v-btn class="btn" style="color:orange;" @click="() => $router.push('/Entry/gameLevel')">Mars</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -33,10 +34,9 @@ export default {
 
 <style scoped>
 .btn {
-    background-color: lightgray;
+    background-color: rgba(224, 223, 223, 0.5);
     font-weight: 700;
     font-size: 30px;
-    border: 2px solid Magenta;
 }
 
 .SceneTitle {
