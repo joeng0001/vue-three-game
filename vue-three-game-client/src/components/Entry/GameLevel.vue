@@ -13,20 +13,26 @@
             <v-card-actions class="d-flex justify-space-between mt-4">
                 <v-container>
                     <v-row>
-                        <v-col cols="4">
+                        <v-col cols="3">
                             <v-btn class="btn" style="color:Aquamarine;">1</v-btn>
                         </v-col>
-                        <v-col cols="4">
+                        <v-col cols="3">
                             <v-btn class="btn" style="color:GreenYellow;">2</v-btn>
                         </v-col>
-                        <v-col cols="4">
+                        <v-col cols="3">
                             <v-btn class="btn" style="color:orange;">3</v-btn>
                         </v-col>
-                        <v-col cols="4">
+                        <v-col cols="3">
                             <v-btn class="btn" style="color:orange;">4</v-btn>
                         </v-col>
                         <v-col cols="4">
-                            <v-btn class="btn" style="color:orange;">5</v-btn>
+                            <v-btn class="btn" style="color:red;">5</v-btn>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-btn class="btn" style="color:red;">6</v-btn>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-btn class="btn" style="color:red;">7</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>

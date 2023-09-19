@@ -3,6 +3,7 @@ import Entry from "@/pages/Entry.vue";
 import HelloWorld from "@/pages/HelloWorld.vue";
 import GameMode from "@/components/Entry/GameMode.vue";
 import GameLevel from "@/components/Entry/GameLevel.vue";
+import Universe from "@/pages/gameScene/Universe";
 
 const routes = [
   {
@@ -16,6 +17,19 @@ const routes = [
       {
         path: "gameMode",
         component: GameMode,
+      },
+      {
+        path: "gameLevel",
+        component: GameLevel,
+      },
+    ],
+  },
+  {
+    path: "/gameScene",
+    children: [
+      {
+        path: "Universe",
+        component: Universe,
       },
       {
         path: "gameLevel",

@@ -25,7 +25,6 @@ export default {
         const galaxyUrl = new URL('@/assets/galaxy.glb', import.meta.url)
         const asteroidUrl = new URL('@/assets/asteroid.glb', import.meta.url)
         const solarSystemUrl = new URL('@/assets/solarSystem.glb', import.meta.url)
-
         const scene = new THREE.Scene();
         const canvas = this.$refs.three
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -66,16 +65,24 @@ export default {
         gltfLoader.load(galaxyUrl.href, function (gltf) {
             const model = gltf.scene;
             scene.add(model);
-
             model.position.set(0, 0, 0)
             model.scale.set(500, 500, 500)
 
         });
 
-
+        let mixer;
         gltfLoader.load(spaceStationUrl.href, function (gltf) {
             const model = gltf.scene;
             scene.add(model);
+            if (gltf.animations && gltf.animations.length > 0) {
+                mixer = new THREE.AnimationMixer(model);
+                const clips = gltf.animations;
+                clips.forEach(function (clip) {
+                    const action = mixer.clipAction(clip);
+                    action.play();
+                });
+            }
+
         });
         for (let i = 0; i < 10; i++) {
             gltfLoader.load(asteroidUrl.href, function (gltf) {
@@ -89,7 +96,6 @@ export default {
             const model = gltf.scene;
             scene.add(model);
             model.position.set(-50, -50, -50)
-
         });
 
 
@@ -117,7 +123,7 @@ export default {
                     pos = 4;
                     break;
                 case 4:
-                    moveCamera(100, 50, -120);
+                    moveCamera(50, 50, -70);
                     rotateCamera(1, 0, 2)
                     pos = 5;
                     break;
@@ -156,13 +162,17 @@ export default {
             });
         }
 
-        const interval = setInterval(() => {
+        const CameraInterval = setInterval(() => {
             moving()
         }, 5000)
+
         window.addEventListener('contextmenu', function () {
-            clearInterval(interval)
+            clearInterval(CameraInterval)
         });
+        const clock = new THREE.Clock();
         function animate() {
+            if (mixer)
+                mixer.update(clock.getDelta());
             renderer.render(scene, camera);
         }
 
