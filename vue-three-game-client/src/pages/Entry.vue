@@ -15,16 +15,16 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import starsTexture from '@/assets/stars.jpg';
-import sunTexture from '@/assets/img/sun.jpg'
+
+
 import gsap from 'gsap'
 export default {
     mounted() {
 
-        const spaceStationUrl = new URL('@/assets/space_station_3.glb', import.meta.url)
-        const galaxyUrl = new URL('@/assets/galaxy.glb', import.meta.url)
-        const asteroidUrl = new URL('@/assets/asteroid.glb', import.meta.url)
-        const solarSystemUrl = new URL('@/assets/solarSystem.glb', import.meta.url)
+        const spaceStationUrl = new URL('@/assets/model/space_station_3.glb', import.meta.url)
+        const galaxyUrl = new URL('@/assets/model/galaxy.glb', import.meta.url)
+        const asteroidUrl = new URL('@/assets/model/asteroid.glb', import.meta.url)
+        const solarSystemUrl = new URL('@/assets/model/solarSystem.glb', import.meta.url)
         const scene = new THREE.Scene();
         const canvas = this.$refs.three
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });

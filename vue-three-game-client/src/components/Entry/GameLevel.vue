@@ -20,19 +20,22 @@
                             <v-btn class="btn" style="color:GreenYellow;">2</v-btn>
                         </v-col>
                         <v-col cols="3">
-                            <v-btn class="btn" style="color:orange;">3</v-btn>
+                            <v-btn class="btn" style="color:DeepSkyBlue;">3</v-btn>
                         </v-col>
                         <v-col cols="3">
-                            <v-btn class="btn" style="color:orange;">4</v-btn>
+                            <v-btn class="btn" style="color:Lime;">4</v-btn>
                         </v-col>
-                        <v-col cols="4">
-                            <v-btn class="btn" style="color:red;">5</v-btn>
+                        <v-col cols="3">
+                            <v-btn class="btn" style="color:Crimson;">5</v-btn>
                         </v-col>
-                        <v-col cols="4">
-                            <v-btn class="btn" style="color:red;">6</v-btn>
+                        <v-col cols="3">
+                            <v-btn class="btn" style="color:darkred;">6</v-btn>
                         </v-col>
-                        <v-col cols="4">
-                            <v-btn class="btn" style="color:red;">7</v-btn>
+                        <v-col cols="3">
+                            <v-btn class="btn" style="color:DeepPink;">7</v-btn>
+                        </v-col>
+                        <v-col cols="3">
+                            <v-btn class="btn" style="color:magenta;">8</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>
