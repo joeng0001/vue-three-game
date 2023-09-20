@@ -82,17 +82,19 @@ export default {
             ]);
 
 
-            const ringGeometry = new THREE.RingGeometry(
-                1,
+            const ringGeometry = new THREE.TorusGeometry(
                 2,
-                64
+                0.5,
+                64, 64
             );
 
+            let rings = [], meteors = []
             const ringMaterial = new THREE.MeshBasicMaterial({ color: 0x90EE90, side: THREE.DoubleSide, });
             for (let i = 0; i < 30; i++) {
                 const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
                 scene.add(ringMesh);
                 ringMesh.position.set(0, 0, -30 - i * 10)
+                rings.push(new THREE.Box3().setFromObject(ringMesh))
             }
 
             for (let i = 0; i < 10; i++) {
@@ -102,52 +104,34 @@ export default {
                     model.position.set(Math.random() * (10 - -10) + -10, Math.random() * (10 - -10) + -10, Math.random() * (10 - -10) + -10)
                     const sceleFactor = Math.floor(Math.random() * 0.1) + 1
                     model.scale.set(sceleFactor, sceleFactor, sceleFactor)
+                    meteors.push(new THREE.Box3().setFromObject(model))
                 });
             }
-
-            const raycaster = new THREE.Raycaster();
-
             let spaceShip = null
-            let a = null, b = null
+
             gltfLoader.load(spaceShipUrl.href, function (gltf) {
                 const model = gltf.scene;
                 scene.add(model);
                 spaceShip = model
-                a = scene.getObjectByName('Sketchfab_Scene');
-                console.log("a loaded", a)
             });
 
 
-            // gltfLoader.load(meteorUrl.href, function (gltf) {
-            //     const model = gltf.scene;
-            //     scene.add(model);
-            //     model.position.set(0, 0, -10)
-
-            //     b = scene.getObjectByName('Sketchfab_Scene');
-            //     console.log("b loaded", b)
-
-            // });
-
-
             function detectCollisions() {
-                //console.log("a,b", a, b)
-                if (!a || !b) return
-                //console.log("start")
-                const origin = new THREE.Vector3();
-                const direction = new THREE.Vector3();
-                origin.copy(a.position);
-                direction.subVectors(b.position, a.position).normalize();
-                raycaster.set(origin, direction);
-                raycaster.far = 30
+                if (!spaceShip) return
+                const spaceShipBox = new THREE.Box3().setFromObject(spaceShip)
+                meteors.forEach(meteor => {
+                    var collision = spaceShipBox.intersectsBox(meteor);
+                    if (collision) {
+                        console.log("collision with rocks")
+                    }
+                })
+                rings.forEach(ring => {
+                    var collision = spaceShipBox.intersectsBox(ring);
+                    if (collision) {
+                        console.log("collision with rings")
+                    }
+                })
 
-
-
-                const collisions = raycaster.intersectObjects([b]);
-
-                if (collisions.length > 0) {
-                    console.log("collision detected", collisions)
-
-                }
             }
 
 
