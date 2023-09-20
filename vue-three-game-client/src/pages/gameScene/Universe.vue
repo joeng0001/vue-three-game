@@ -10,15 +10,12 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import starsTexture from '@/assets/img/space2.jpg';
-
+import * as CANNON from "cannon-es";
 
 
 export default {
     mounted() {
-        this.initScene(this.movementKey)
-
-
-
+        this.initScene()
     },
     data() {
         return {
@@ -28,20 +25,26 @@ export default {
                 's': false,
                 'd': false,
                 ' ': false,
-                'Alt': false
+                'Alt': false,
+                'Shift': false
+            },
+            speed: {
+                value: 0.05,
+                factor: 1,
+                rotateSpeed: 0.01,
+                maxSideRotation: 0.2,
+                minSideRotation: -0.2,
+                maxFrontRotation: 0.2,
+                minFrontRotation: 0.2,
             }
         }
     },
     methods: {
-        initScene(movementKey) {
+        initScene() {
+            const movementKey = this.movementKey
             const spaceShipUrl = new URL('@/assets/model/spaceShip.glb', import.meta.url)
+            const meteorUrl = new URL('@/assets/model/meteor.glb', import.meta.url)
             const gltfLoader = new GLTFLoader();
-            let spaceShip = null
-            gltfLoader.load(spaceShipUrl.href, function (gltf) {
-                const model = gltf.scene;
-                scene.add(model);
-                spaceShip = model
-            });
 
             const scene = new THREE.Scene();
 
@@ -59,12 +62,14 @@ export default {
             );
 
             const orbit = new OrbitControls(camera, renderer.domElement);
-
-            camera.position.set(0, 50, 50);
+            camera.position.set(0, 20, 30);
             orbit.update();
 
             const ambientLight = new THREE.AmbientLight(0xFFFFFF);
             scene.add(ambientLight);
+
+            const axesHelper = new THREE.AxesHelper(100);
+            scene.add(axesHelper);
 
             const cubeTextureLoader = new THREE.CubeTextureLoader();
             scene.background = cubeTextureLoader.load([
@@ -76,41 +81,130 @@ export default {
                 starsTexture
             ]);
 
-            const axesHelper = new THREE.AxesHelper(100);
-            scene.add(axesHelper);
 
-            function moveSpaceShip(movementKey) {
-                if (movementKey['w']) {
-                    spaceShip.position.z -= 0.01
-                    if (spaceShip.rotation.x < 0.3) {
-                        spaceShip.rotation.x += 0.01
-                    }
+            const ringGeometry = new THREE.RingGeometry(
+                1,
+                2,
+                64
+            );
+
+            const ringMaterial = new THREE.MeshBasicMaterial({ color: 0x90EE90, side: THREE.DoubleSide, });
+            for (let i = 0; i < 30; i++) {
+                const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+                scene.add(ringMesh);
+                ringMesh.position.set(0, 0, -30 - i * 10)
+            }
+
+            for (let i = 0; i < 10; i++) {
+                gltfLoader.load(meteorUrl.href, function (gltf) {
+                    const model = gltf.scene;
+                    scene.add(model);
+                    model.position.set(Math.random() * (10 - -10) + -10, Math.random() * (10 - -10) + -10, Math.random() * (10 - -10) + -10)
+                    const sceleFactor = Math.floor(Math.random() * 0.1) + 1
+                    model.scale.set(sceleFactor, sceleFactor, sceleFactor)
+                });
+            }
+
+            const raycaster = new THREE.Raycaster();
+
+            let spaceShip = null
+            let a = null, b = null
+            gltfLoader.load(spaceShipUrl.href, function (gltf) {
+                const model = gltf.scene;
+                scene.add(model);
+                spaceShip = model
+                a = scene.getObjectByName('Sketchfab_Scene');
+                console.log("a loaded", a)
+            });
+
+
+            // gltfLoader.load(meteorUrl.href, function (gltf) {
+            //     const model = gltf.scene;
+            //     scene.add(model);
+            //     model.position.set(0, 0, -10)
+
+            //     b = scene.getObjectByName('Sketchfab_Scene');
+            //     console.log("b loaded", b)
+
+            // });
+
+
+            function detectCollisions() {
+                //console.log("a,b", a, b)
+                if (!a || !b) return
+                //console.log("start")
+                const origin = new THREE.Vector3();
+                const direction = new THREE.Vector3();
+                origin.copy(a.position);
+                direction.subVectors(b.position, a.position).normalize();
+                raycaster.set(origin, direction);
+                raycaster.far = 30
+
+
+
+                const collisions = raycaster.intersectObjects([b]);
+
+                if (collisions.length > 0) {
+                    console.log("collision detected", collisions)
 
                 }
-                if (movementKey['s']) {
-                    spaceShip.position.z += 0.01
-                    if (spaceShip.rotation.x > -0.3) {
+            }
+
+
+
+
+
+
+            const moveSpaceShip = (camera) => {
+                const speed = this.speed
+
+                if (!camera || !spaceShip) return
+
+                if (movementKey['Shift']) {
+                    if (speed.factor < 2) {
+                        speed.factor += 0.1
+                    }
+                } else {
+                    speed.factor = 1
+                }
+                if (movementKey['w']) {
+                    spaceShip.position.z -= speed.value * speed.factor
+                    camera.position.z -= speed.value * speed.factor
+                    if (spaceShip.rotation.x < speed.maxFrontRotation) {
+                        spaceShip.rotation.x += 0.01
+                    }
+                } else if (movementKey['s']) {
+                    spaceShip.position.z += speed.value * speed.factor
+                    camera.position.z += speed.value * speed.factor
+                    if (spaceShip.rotation.x > speed.minFrontRotation) {
                         spaceShip.rotation.x -= 0.01
                     }
                 }
                 if (movementKey['a']) {
-                    spaceShip.position.x -= 0.01
-                    spaceShip.rotation.z += 0.02
-                }
-                if (movementKey['d']) {
-                    spaceShip.position.x += 0.01
-                    spaceShip.rotation.z -= 0.02
-                }
-                if (movementKey[' ']) {
-                    spaceShip.position.y += 0.01
+                    spaceShip.position.x -= speed.value * speed.factor
+                    camera.position.x -= speed.value * speed.factor
+                    if (spaceShip.rotation.z < speed.maxSideRotation)
+                        spaceShip.rotation.z += speed.rotateSpeed
+                } else if (movementKey['d']) {
+                    spaceShip.position.x += speed.value * speed.factor
+                    camera.position.x += speed.value * speed.factor
+                    if (spaceShip.rotation.z > speed.minSideRotation)
+                        spaceShip.rotation.z -= speed.rotateSpeed
                 }
                 if (movementKey['Alt']) {
-                    spaceShip.position.y -= 0.01
+                    spaceShip.position.y -= speed.value * speed.factor
+                    camera.position.y -= speed.value * speed.factor
+                } else if (movementKey[' ']) {
+                    spaceShip.position.y += speed.value * speed.factor
+                    camera.position.y += speed.value * speed.factor
                 }
+                orbit.target.copy(new THREE.Vector3(spaceShip.position.x, spaceShip.position.y, spaceShip.position.z))
+                orbit.update();
             }
 
             function animate() {
-                moveSpaceShip(movementKey)
+                detectCollisions()
+                moveSpaceShip(camera)
                 renderer.render(scene, camera);
             }
 
@@ -123,7 +217,6 @@ export default {
         },
         addSpaceShipMovementListener(movementKey) {
             window.addEventListener('keydown', (e) => {
-                console.log(e)
                 e.preventDefault()
                 movementKey[e.key] = true;
             }, false);
@@ -131,6 +224,7 @@ export default {
                 e.preventDefault()
                 movementKey[e.key] = false;
             }, false);
+
 
         },
         addCanvasResizeListener(camera, renderer) {
