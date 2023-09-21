@@ -106,7 +106,7 @@ export default {
                     model.scale.set(sceleFactor, sceleFactor, sceleFactor)
                     meteors.push({
                         model, box: new THREE.Box3().setFromObject(model),
-                        collisionHappened: false, collisionWithWall: false,
+                        collisionHappened: false, positionTooFar: false,
                         rotationSpeed: Math.random() * (0.01 - 0.001) + 0.001,
                         rotationX: Math.random() < 0.5, rotationY: Math.random() < 0.5, rotationZ: Math.random() < 0.5,
                         movementSpeed: Math.random() * (0.01 - 0.001) + 0.001,
@@ -123,10 +123,11 @@ export default {
                 spaceShip = model
             });
             let lock = false, lock2 = false
-            setInterval(() => {
-                if (lock) return
-                lock = true
 
+
+            const collisionHandler = () => {
+                if (!spaceShip || lock) return
+                lock = true
                 //remove collision
                 rings.forEach(ring => {
                     if (ring.collisionHappened) {
@@ -140,21 +141,35 @@ export default {
                 meteors.forEach(meteor => {
                     if (meteor.collisionHappened) {
                         console.log("meteor collision detect")
-                        const newPos = [spaceShip.position.x + Math.random() * 40 - 20, spaceShip.position.y + Math.random() * 40 - 20, spaceShip.position.z + Math.random() * -40]
-                        meteor.model.position.set(newPos[0], newPos[1], newPos[2])
-                        const translation = new THREE.Vector3(newPos[0], newPos[1], newPos[2]).sub(meteor.box.getCenter(new THREE.Vector3()));
-                        meteor.box.min.add(translation);
-                        meteor.box.max.add(translation);
+                        const newPos = [
+                            spaceShip.position.x + Math.floor(Math.random() * 61) - 30,
+                            spaceShip.position.y + Math.floor(Math.random() * 41) - 20,
+                            spaceShip.position.z - Math.floor(Math.random() * (80 - 30 + 1)) + 30]
+                        setObjPos(meteor, newPos[0], newPos[1], newPos[2])
                         meteor.collisionHappened = false
                     }
                 })
-
-                //remove meteor that leave behind spaceShip
                 lock = false
-            }, 100)
+            }
+
+            const reRenderMeteorHandler = () => {
+                if (!spaceShip || lock2) return
+                lock2 = true
+                meteors.forEach(meteor => {
+                    if (meteor.positionTooFar) {
+                        const newPos = [
+                            spaceShip.position.x + Math.floor(Math.random() * 61) - 30,
+                            spaceShip.position.y + Math.floor(Math.random() * 41) - 20,
+                            spaceShip.position.z - Math.floor(Math.random() * (80 - 30 + 1)) + 30]
+                        setObjPos(meteor, newPos[0], newPos[1], newPos[2])
+                        meteor.positionTooFar = false
+                    }
+                })
+                lock2 = false
+            }
 
 
-            function detectCollisions() {
+            const detectCollisions = () => {
                 if (!spaceShip) return
                 const spaceShipBox = new THREE.Box3().setFromObject(spaceShip)
                 meteors.map(meteor => {
@@ -169,19 +184,20 @@ export default {
                 })
             }
 
-            function detectCollisionWithWall() {
-                if (!spaceShip || lock2) return
-                lock2 = true
-                meteors.map(meteor => {
-                    if (meteor.collisionWithWall) {
-                        const newPos = [spaceShip.position.x + Math.random() * 40 - 20, spaceShip.position.y + Math.random() * 40 - 20, spaceShip.position.z + Math.random() * -40]
-                        meteor.model.position.set(newPos[0], newPos[1], newPos[2])
-                        meteor.collisionWithWall = false
+            const detectMeteorPos = () => {
+                if (!spaceShip) return
+                meteors.forEach(meteor => {
+                    const distance = Math.sqrt(
+                        Math.pow(meteor.model.position.x - spaceShip.position.x, 2) +
+                        Math.pow(meteor.model.position.y - spaceShip.position.y, 2) +
+                        Math.pow(meteor.model.position.z - spaceShip.position.z, 2)
+                    );
+                    if (distance > 80) {
+                        console.log("meteor leave spaceship")
+                        meteor.positionTooFar = true
                     }
                 })
-                lock2 = false
             }
-
 
             const moveMeteor = () => {
                 if (!spaceShip) return
@@ -191,16 +207,14 @@ export default {
                     if (meteor.rotationY) meteor.model.rotation.y += meteor.rotationSpeed
                     if (meteor.rotationZ) meteor.model.rotation.z += meteor.rotationSpeed
 
+
+
                     meteor.model.position.z += meteor.movementSpeed
                     if (meteor.movementX) { meteor.model.position.x += meteor.movementSpeed }
                     else { meteor.model.position.x -= meteor.movementSpeed }
                     if (meteor.movementY) { meteor.model.position.y += meteor.movementSpeed }
                     else { meteor.model.position.y -= meteor.movementSpeed }
-
-                    if (meteor.model.position.z > spaceShip.position.z + 10) {
-                        console.log("behind the space ship detected")
-                        meteor.collisionWithWall = true
-                    }
+                    setObjPos(meteor, meteor.model.position.x, meteor.model.position.y, meteor.model.position.z)
                 })
             }
 
@@ -253,15 +267,25 @@ export default {
                 orbit.update();
             }
 
-            function animate() {
+            const setObjPos = (obj, x, y, z) => {
+                obj.model.position.set(x, y, z)
+                const translation = new THREE.Vector3(x, y, z).sub(obj.box.getCenter(new THREE.Vector3()));
+                obj.box.min.add(translation);
+                obj.box.max.add(translation);
+            }
+
+
+            setInterval(() => {
+                collisionHandler()
+                reRenderMeteorHandler()
                 detectCollisions()
-                detectCollisionWithWall()
+                detectMeteorPos()
+            }, 100)
+            function animate() {
                 moveSpaceShip(camera)
                 moveMeteor()
                 renderer.render(scene, camera);
             }
-
-
 
             renderer.setAnimationLoop(animate);
 
