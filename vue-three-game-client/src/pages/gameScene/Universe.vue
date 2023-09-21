@@ -94,17 +94,25 @@ export default {
                 const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
                 scene.add(ringMesh);
                 ringMesh.position.set(0, 0, -30 - i * 10)
-                rings.push(new THREE.Box3().setFromObject(ringMesh))
+                rings.push({ model: ringMesh, box: new THREE.Box3().setFromObject(ringMesh), collisionHappened: false })
             }
 
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 20; i++) {
                 gltfLoader.load(meteorUrl.href, function (gltf) {
                     const model = gltf.scene;
                     scene.add(model);
-                    model.position.set(Math.random() * (10 - -10) + -10, Math.random() * (10 - -10) + -10, Math.random() * (10 - -10) + -10)
-                    const sceleFactor = Math.floor(Math.random() * 0.1) + 1
+                    model.position.set(Math.random() * 40 - 20, Math.random() * 40 - 20, Math.random() * -40)
+                    const sceleFactor = Math.random() * (2 - 0.5) + 0.5;
                     model.scale.set(sceleFactor, sceleFactor, sceleFactor)
-                    meteors.push(new THREE.Box3().setFromObject(model))
+                    meteors.push({
+                        model, box: new THREE.Box3().setFromObject(model),
+                        collisionHappened: false, collisionWithWall: false,
+                        rotationSpeed: Math.random() * (0.01 - 0.001) + 0.001,
+                        rotationX: Math.random() < 0.5, rotationY: Math.random() < 0.5, rotationZ: Math.random() < 0.5,
+                        movementSpeed: Math.random() * (0.01 - 0.001) + 0.001,
+                        movementX: Math.random() < 0.5, movementY: Math.random() < 0.5, movementZ: 0.05
+
+                    })
                 });
             }
             let spaceShip = null
@@ -114,28 +122,87 @@ export default {
                 scene.add(model);
                 spaceShip = model
             });
+            let lock = false, lock2 = false
+            setInterval(() => {
+                if (lock) return
+                lock = true
+
+                //remove collision
+                rings.forEach(ring => {
+                    if (ring.collisionHappened) {
+                        scene.remove(ring.model)
+                        scene.remove(ring.box)
+                        rings = rings.filter(obj => obj != ring)
+                        console.log("removed rings")
+                    }
+                })
+
+                meteors.forEach(meteor => {
+                    if (meteor.collisionHappened) {
+                        console.log("meteor collision detect")
+                        const newPos = [spaceShip.position.x + Math.random() * 40 - 20, spaceShip.position.y + Math.random() * 40 - 20, spaceShip.position.z + Math.random() * -40]
+                        meteor.model.position.set(newPos[0], newPos[1], newPos[2])
+                        const translation = new THREE.Vector3(newPos[0], newPos[1], newPos[2]).sub(meteor.box.getCenter(new THREE.Vector3()));
+                        meteor.box.min.add(translation);
+                        meteor.box.max.add(translation);
+                        meteor.collisionHappened = false
+                    }
+                })
+
+                //remove meteor that leave behind spaceShip
+                lock = false
+            }, 100)
 
 
             function detectCollisions() {
                 if (!spaceShip) return
                 const spaceShipBox = new THREE.Box3().setFromObject(spaceShip)
-                meteors.forEach(meteor => {
-                    var collision = spaceShipBox.intersectsBox(meteor);
-                    if (collision) {
-                        console.log("collision with rocks")
+                meteors.map(meteor => {
+                    if (spaceShipBox.intersectsBox(meteor.box)) {
+                        meteor.collisionHappened = true
                     }
                 })
-                rings.forEach(ring => {
-                    var collision = spaceShipBox.intersectsBox(ring);
-                    if (collision) {
-                        console.log("collision with rings")
+                rings.map(ring => {
+                    if (spaceShipBox.intersectsBox(ring.box)) {
+                        ring.collisionHappened = true
                     }
                 })
+            }
 
+            function detectCollisionWithWall() {
+                if (!spaceShip || lock2) return
+                lock2 = true
+                meteors.map(meteor => {
+                    if (meteor.collisionWithWall) {
+                        const newPos = [spaceShip.position.x + Math.random() * 40 - 20, spaceShip.position.y + Math.random() * 40 - 20, spaceShip.position.z + Math.random() * -40]
+                        meteor.model.position.set(newPos[0], newPos[1], newPos[2])
+                        meteor.collisionWithWall = false
+                    }
+                })
+                lock2 = false
             }
 
 
+            const moveMeteor = () => {
+                if (!spaceShip) return
+                meteors.forEach(meteor => {
+                    //need to set box model as well
+                    if (meteor.rotationX) meteor.model.rotation.x += meteor.rotationSpeed
+                    if (meteor.rotationY) meteor.model.rotation.y += meteor.rotationSpeed
+                    if (meteor.rotationZ) meteor.model.rotation.z += meteor.rotationSpeed
 
+                    meteor.model.position.z += meteor.movementSpeed
+                    if (meteor.movementX) { meteor.model.position.x += meteor.movementSpeed }
+                    else { meteor.model.position.x -= meteor.movementSpeed }
+                    if (meteor.movementY) { meteor.model.position.y += meteor.movementSpeed }
+                    else { meteor.model.position.y -= meteor.movementSpeed }
+
+                    if (meteor.model.position.z > spaceShip.position.z + 10) {
+                        console.log("behind the space ship detected")
+                        meteor.collisionWithWall = true
+                    }
+                })
+            }
 
 
 
@@ -188,7 +255,9 @@ export default {
 
             function animate() {
                 detectCollisions()
+                detectCollisionWithWall()
                 moveSpaceShip(camera)
+                moveMeteor()
                 renderer.render(scene, camera);
             }
 
