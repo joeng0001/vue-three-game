@@ -39,6 +39,7 @@ export default {
                 minSideRotation: -0.2,
                 maxFrontRotation: 0.2,
                 minFrontRotation: 0.2,
+                bulletSpeed: 0.3
             }
         }
     },
@@ -103,7 +104,7 @@ export default {
                 rings.push({ model: ringMesh, box: new THREE.Box3().setFromObject(ringMesh), collisionHappened: false })
             }
 
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 30; i++) {
                 gltfLoader.load(meteorUrl.href, function (gltf) {
                     const model = gltf.scene;
                     scene.add(model);
@@ -112,13 +113,13 @@ export default {
                     model.scale.set(sceleFactor, sceleFactor, sceleFactor)
                     meteors.push({
                         model, box: new THREE.Box3().setFromObject(model),
-                        collisionHappened: false, positionTooFar: false,
+                        collisionHappened: false, positionTooFar: false, gotShoot: false,
                         rotationSpeed: Math.random() * (0.01 - 0.001) + 0.001,
                         rotationX: Math.random() < 0.5, rotationY: Math.random() < 0.5, rotationZ: Math.random() < 0.5,
                         movementSpeed: Math.random() * (0.01 - 0.001) + 0.001,
                         movementX: Math.random() < 0.5, movementY: Math.random() < 0.5, movementZ: Math.random() < 0.5
-
                     })
+                    console.log("meteor loaded")
                 });
             }
             let spaceShip = null
@@ -140,13 +141,11 @@ export default {
                         scene.remove(ring.model)
                         scene.remove(ring.box)
                         rings = rings.filter(obj => obj != ring)
-                        console.log("removed rings")
                     }
                 })
 
                 meteors.forEach(meteor => {
                     if (meteor.collisionHappened) {
-                        console.log("meteor collision detect")
                         const newPos = [
                             spaceShip.position.x + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50),
                             spaceShip.position.y + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50),
@@ -156,9 +155,19 @@ export default {
                     }
                 })
 
+                meteors.forEach(meteor => {
+                    if (meteor.gotShoot) {
+                        const newPos = [
+                            spaceShip.position.x + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50),
+                            spaceShip.position.y + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50),
+                            spaceShip.position.z + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50)]
+                        setObjPos(meteor, newPos[0], newPos[1], newPos[2])
+                        meteor.gotShoot = false
+                    }
+                })
+
                 shootBullets.forEach(bullet => {
                     if (bullet.collisionHappened) {
-                        console.log("removing bullet due to shoot to meteor")
                         scene.remove(bullet.model)
                         scene.remove(bullet.box)
                         shootBullets = shootBullets.filter(obj => obj != bullet)
@@ -211,7 +220,7 @@ export default {
                         if (bullet.box.intersectsBox(meteor.box)) {
                             console.log("detect bnullet intersert wwith meteor")
                             bullet.collisionHappened = true
-                            meteor.collisionHappened = true
+                            meteor.gotShoot = true
                         }
                     })
                 })
@@ -232,7 +241,6 @@ export default {
             }
 
             const detectBulletPos = () => {
-                console.log("detrecting bullet position")
                 if (!spaceShip) return
                 shootBullets.forEach(bullet => {
                     const distance = Math.sqrt(
@@ -241,7 +249,6 @@ export default {
                         Math.pow(bullet.model.position.z - spaceShip.position.z, 2)
                     );
                     if (distance > 100) {
-                        console.log("bullet leave spaceship")
                         bullet.positionTooFar = true
                     }
                 })
@@ -320,18 +327,18 @@ export default {
                 obj.box.min.add(translation);
                 obj.box.max.add(translation);
             }
-
             const detectShoot = () => {
                 if (detectShootLock) return
                 detectShootLock = true
                 if (this.control.shoot) {
+                    const movementSpeed = this.speed.bulletSpeed
                     gltfLoader.load(shootBulletUrl.href, function (gltf) {
                         const model = gltf.scene;
                         scene.add(model);
                         model.scale.set(0.01, 0.01, 0.01)
                         model.position.set(spaceShip.position.x, spaceShip.position.y, spaceShip.position.z)
                         shootBullets.push({
-                            model, box: new THREE.Box3().setFromObject(model), movementSpeed: 0.05,
+                            model, box: new THREE.Box3().setFromObject(model), movementSpeed,
                             positionTooFar: false, collisionHappened: false,
                         })
                     });
