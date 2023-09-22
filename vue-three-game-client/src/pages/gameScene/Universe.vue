@@ -48,6 +48,8 @@ export default {
             const movementKey = this.movementKey
             const spaceShipUrl = new URL('@/assets/model/spaceShip.glb', import.meta.url)
             const meteorUrl = new URL('@/assets/model/meteor.glb', import.meta.url)
+            const meteor2Url = new URL('@/assets/model/meteor2.glb', import.meta.url)
+            const meteor3Url = new URL('@/assets/model/meteor3.glb', import.meta.url)
             const shootBulletUrl = new URL('@/assets/model/lazer_bullet.glb', import.meta.url)
 
             const gltfLoader = new GLTFLoader();
@@ -72,7 +74,11 @@ export default {
             camera.position.set(0, 20, 30);
             orbit.update();
 
-            const ambientLight = new THREE.AmbientLight(0xFFFFFF);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+
+            const ambientLight = new THREE.AmbientLight(0xFFFFFF, 1);
             scene.add(ambientLight);
 
             const axesHelper = new THREE.AxesHelper(100);
@@ -104,12 +110,44 @@ export default {
                 rings.push({ model: ringMesh, box: new THREE.Box3().setFromObject(ringMesh), collisionHappened: false })
             }
 
-            for (let i = 0; i < 30; i++) {
+            for (let i = 0; i < 10; i++) {
                 gltfLoader.load(meteorUrl.href, function (gltf) {
                     const model = gltf.scene;
                     scene.add(model);
                     model.position.set((Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50))
                     const sceleFactor = Math.random() * (2 - 0.5) + 0.5;
+                    model.scale.set(sceleFactor, sceleFactor, sceleFactor)
+                    meteors.push({
+                        model, box: new THREE.Box3().setFromObject(model),
+                        collisionHappened: false, positionTooFar: false, gotShoot: false,
+                        rotationSpeed: Math.random() * (0.01 - 0.001) + 0.001,
+                        rotationX: Math.random() < 0.5, rotationY: Math.random() < 0.5, rotationZ: Math.random() < 0.5,
+                        movementSpeed: Math.random() * (0.01 - 0.001) + 0.001,
+                        movementX: Math.random() < 0.5, movementY: Math.random() < 0.5, movementZ: Math.random() < 0.5
+                    })
+                    console.log("meteor loaded")
+                });
+                gltfLoader.load(meteor2Url.href, function (gltf) {
+                    const model = gltf.scene;
+                    scene.add(model);
+                    model.position.set((Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50))
+                    const sceleFactor = Math.random() * (2 - 0.5) + 0.5;
+                    model.scale.set(sceleFactor, sceleFactor, sceleFactor)
+                    meteors.push({
+                        model, box: new THREE.Box3().setFromObject(model),
+                        collisionHappened: false, positionTooFar: false, gotShoot: false,
+                        rotationSpeed: Math.random() * (0.01 - 0.001) + 0.001,
+                        rotationX: Math.random() < 0.5, rotationY: Math.random() < 0.5, rotationZ: Math.random() < 0.5,
+                        movementSpeed: Math.random() * (0.01 - 0.001) + 0.001,
+                        movementX: Math.random() < 0.5, movementY: Math.random() < 0.5, movementZ: Math.random() < 0.5
+                    })
+                    console.log("meteor loaded")
+                });
+                gltfLoader.load(meteor3Url.href, function (gltf) {
+                    const model = gltf.scene;
+                    scene.add(model);
+                    model.position.set((Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50))
+                    const sceleFactor = Math.random() * (0.05 - 0.01)
                     model.scale.set(sceleFactor, sceleFactor, sceleFactor)
                     meteors.push({
                         model, box: new THREE.Box3().setFromObject(model),

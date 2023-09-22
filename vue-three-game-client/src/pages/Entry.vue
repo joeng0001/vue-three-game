@@ -48,12 +48,9 @@ export default {
         const ambient = new THREE.AmbientLight(0xFFFFFF, 0.1);
         scene.add(ambient);
 
-
-        const spotLight = new THREE.SpotLight(0xffffff, 0.9, 0, Math.PI / 8, 1)
-        spotLight.position.set(-30, 40, 30)
-        spotLight.target.position.set(0, 0, 0)
-        spotLight.angle = 0.2
-        scene.add(spotLight)
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(-1, 0, 0); // Set the position to (-1, 0, 0)
+        scene.add(directionalLight);
 
         const gltfLoader = new GLTFLoader();
 
@@ -163,7 +160,7 @@ export default {
         }
 
         const CameraInterval = setInterval(() => {
-            moving()
+            //moving()
         }, 5000)
 
         window.addEventListener('contextmenu', function () {
