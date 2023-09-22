@@ -1,9 +1,4 @@
 <template>
-    <!-- <div>this login page</div>
-    <button @click="addId">add </button>
-    <button @click="removeId">remove </button>
-    <div>{{ this.$store.state.userID }}</div>
-    <v-btn>vuetify</v-btn> -->
     <div>
         <canvas ref="three"></canvas>
         <router-view></router-view>
@@ -160,7 +155,7 @@ export default {
         }
 
         const CameraInterval = setInterval(() => {
-            //moving()
+            moving()
         }, 5000)
 
         window.addEventListener('contextmenu', function () {

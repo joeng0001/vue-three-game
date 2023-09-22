@@ -4,7 +4,7 @@ import HelloWorld from "@/pages/HelloWorld.vue";
 import GameMode from "@/components/Entry/GameMode.vue";
 import GameLevel from "@/components/Entry/GameLevel.vue";
 import Universe from "@/pages/gameScene/Universe";
-
+import Earth from "@/pages/gameScene/Earth";
 const routes = [
   {
     path: "/",
@@ -32,8 +32,8 @@ const routes = [
         component: Universe,
       },
       {
-        path: "gameLevel",
-        component: GameLevel,
+        path: "Earth",
+        component: Earth,
       },
     ],
   },
