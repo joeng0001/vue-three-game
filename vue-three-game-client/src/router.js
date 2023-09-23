@@ -5,6 +5,7 @@ import GameMode from "@/components/Entry/GameMode.vue";
 import GameLevel from "@/components/Entry/GameLevel.vue";
 import Universe from "@/pages/gameScene/Universe";
 import Earth from "@/pages/gameScene/Earth";
+import Mars from "@/pages/gameScene/Mars";
 const routes = [
   {
     path: "/",
@@ -34,6 +35,10 @@ const routes = [
       {
         path: "Earth",
         component: Earth,
+      },
+      {
+        path: "Mars",
+        component: Mars,
       },
     ],
   },
