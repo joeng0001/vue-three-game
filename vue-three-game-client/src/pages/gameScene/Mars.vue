@@ -16,7 +16,6 @@ class Car {
     constructor(scene, world) {
         this.scene = scene;
         this.world = world;
-
         this.car = {};
         this.chassis = {};
         this.wheels = [];
@@ -256,6 +255,7 @@ class Car {
                     this.car.chassisBody.position.z + this.chassisModelPos.z
                 );
                 this.chassis.quaternion.copy(this.car.chassisBody.quaternion);
+
                 for (let i = 0; i < 4; i++) {
                     if (this.car.wheelInfos[i]) {
                         this.car.updateWheelTransform(i);
@@ -319,7 +319,8 @@ export default {
             const spotLight3 = new THREE.SpotLight(0xd5f8ff, 2, 0, 0.9, 1, 0);
             spotLight3.position.set(0, 1.291, 7);
             scene.add(spotLight, spotLight2, spotLight3);
-
+            const axesHelper = new THREE.AxesHelper(100);
+            scene.add(axesHelper);
             /**
              * Cube Texture Loader
              */
@@ -383,25 +384,20 @@ export default {
 
 
             const camera = new THREE.PerspectiveCamera(50, sizes.width / sizes.height, 0.1, 10000)
-            camera.position.set(0, 4, 6)
+            camera.position.set(0, 10, -10)
             scene.add(camera)
 
             // Controls
             const controls = new OrbitControls(camera, canvas)
             controls.enableDamping = true
 
-            /**
-             * Renderer
-             */
+
             const renderer = new THREE.WebGLRenderer({
                 canvas: canvas
             })
             renderer.setSize(sizes.width, sizes.height)
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-            /**
-             * Animate
-             */
             const timeStep = 1 / 60 // seconds
             let lastCallTime = null
             function sleep(ms) {
@@ -410,15 +406,9 @@ export default {
             await sleep(5000)
             const tick = () => {
                 try {
-
-
                     stats.begin();
                     // Update controls
                     controls.update()
-
-
-
-
                     const time = performance.now() / 1000 // seconds
                     if (!lastCallTime) {
                         world.step(timeStep)
@@ -430,6 +420,14 @@ export default {
 
                     lastCallTime = time
 
+                    console.log(car.chassis.position)
+                    camera.parent = car.chassis
+                    // camera.position.set(
+                    //     car.chassis.position.x + car.chassis.position.x - camera.position.x,
+                    //     car.chassis.position.y + car.chassis.position.y - camera.position.y,
+                    //     car.chassis.position.z + car.chassis.position.z - camera.position.z
+                    // )
+                    camera.lookAt(car.chassis.position)
                     // Render
                     renderer.render(scene, camera)
                     stats.end();

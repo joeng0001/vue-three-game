@@ -1,5 +1,6 @@
 <template>
     <div>
+        <div style="background-color: white;">{{ CollisionDistance }}</div>
         <canvas ref="three"></canvas>
     </div>
 </template>
@@ -40,7 +41,8 @@ export default {
                 maxFrontRotation: 0.2,
                 minFrontRotation: 0.2,
                 bulletSpeed: 0.3
-            }
+            },
+            CollisionDistance: null
         }
     },
     methods: {
@@ -292,6 +294,24 @@ export default {
                 })
             }
 
+            const detectCollisionDistance = () => {
+                if (!spaceShip) return
+                let min_distance = 9999
+                meteors.map(meteor => {
+                    console.log(meteor)
+                    const distance = Math.sqrt(
+                        Math.pow(meteor.model.position.x - spaceShip.position.x, 2) +
+                        Math.pow(meteor.model.position.y - spaceShip.position.y, 2) +
+                        Math.pow(meteor.model.position.z - spaceShip.position.z, 2)
+                    );
+
+                    if (distance < min_distance) {
+                        min_distance = distance
+                    }
+                })
+                this.CollisionDistance = min_distance
+            }
+
             const moveMeteor = () => {
                 if (!spaceShip) return
                 meteors.forEach(meteor => {
@@ -307,8 +327,6 @@ export default {
                     setObjPos(meteor, meteor.model.position.x, meteor.model.position.y, meteor.model.position.z)
                 })
             }
-
-
 
             const moveSpaceShip = (camera) => {
                 const speed = this.speed
@@ -357,8 +375,6 @@ export default {
                 orbit.update();
             }
 
-
-
             const setObjPos = (obj, x, y, z) => {
                 obj.model.position.set(x, y, z)
                 const translation = new THREE.Vector3(x, y, z).sub(obj.box.getCenter(new THREE.Vector3()));
@@ -399,6 +415,7 @@ export default {
                 detectCollisions()
                 detectMeteorPos()
                 detectBulletPos()
+                detectCollisionDistance()
             }, 100)
             function animate() {
                 moveSpaceShip(camera)
