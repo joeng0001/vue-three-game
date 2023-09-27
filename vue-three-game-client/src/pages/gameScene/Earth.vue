@@ -16,7 +16,6 @@ class Car {
     constructor(scene, world) {
         this.scene = scene;
         this.world = world;
-
         this.car = {};
         this.chassis = {};
         this.wheels = [];
@@ -167,7 +166,7 @@ class Car {
 
     controls() {
         const maxSteerVal = 0.2;
-        const maxForce = 10;
+        const maxForce = 200;
         const brakeForce = 36;
         const slowDownCar = 19.6;
         const keysPressed = [];
@@ -256,6 +255,7 @@ class Car {
                     this.car.chassisBody.position.z + this.chassisModelPos.z
                 );
                 this.chassis.quaternion.copy(this.car.chassisBody.quaternion);
+
                 for (let i = 0; i < 4; i++) {
                     if (this.car.wheelInfos[i]) {
                         this.car.updateWheelTransform(i);
@@ -281,8 +281,9 @@ export default {
     },
     methods: {
         async initScene() {
+            console.log("loading")
             var stats = new Stats();
-            stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+            stats.showPanel(0);
             document.body.appendChild(stats.dom);
             const canvas = this.$refs.three
             const scene = new THREE.Scene()
@@ -308,6 +309,7 @@ export default {
             world.addContactMaterial(bodyGroundContactMaterial)
 
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.4)
+            scene.add(ambientLight)
             const spotLight = new THREE.SpotLight(0x29dfff, 2, 0, 0.9, 1, 0);
             spotLight.position.set(7, 1.291, -6);
             const spotLight2 = new THREE.SpotLight(0x943dff, 2, 0, 0.9, 1, 0);
@@ -316,117 +318,159 @@ export default {
             spotLight3.position.set(0, 1.291, 7);
             scene.add(spotLight, spotLight2, spotLight3);
 
-            /**
-             * Cube Texture Loader
-             */
+
+            const axesHelper = new THREE.AxesHelper(100);
+            scene.add(axesHelper);
+
             const cubeTextureLoader = new THREE.CubeTextureLoader()
             const cubeEnvironmentMapTexture = cubeTextureLoader.load([
                 starsTexture, starsTexture, starsTexture, starsTexture, starsTexture, starsTexture
             ])
-            // scene.background = cubeEnvironmentMapTexture
-            scene.environment = cubeEnvironmentMapTexture
+            scene.background = cubeEnvironmentMapTexture
 
-            /**
-             * Sizes
-             */
             const sizes = {
                 width: window.innerWidth,
                 height: window.innerHeight
             }
 
             window.addEventListener('resize', () => {
-                // Update sizes
                 sizes.width = window.innerWidth
                 sizes.height = window.innerHeight
 
-                // Update camera
                 camera.aspect = sizes.width / sizes.height
                 camera.updateProjectionMatrix()
 
-                // Update renderer
                 renderer.setSize(sizes.width, sizes.height)
                 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
             })
 
-            /**
-             * Floor
-             */
-            const floorGeo = new THREE.PlaneGeometry(100, 100);
-            const floorMesh = new THREE.Mesh(
-                floorGeo,
-                new THREE.MeshStandardMaterial({
-                    color: 0xffffff,
-                    roughness: 0.5,
-                    metalness: 0,
-                    emissive: 0xffffff,
-                    emissiveIntensity: -0.36,
-                })
-            )
-            floorMesh.rotation.x = -Math.PI * 0.5;
-            scene.add(floorMesh)
 
-            const floorS = new CANNON.Plane();
-            const floorB = new CANNON.Body();
-            floorB.mass = 0;
 
-            floorB.addShape(floorS);
-            world.addBody(floorB);
+            let matrix = [];
+            let sizeX = 64,
+                sizeY = 64;
 
-            floorB.quaternion.setFromAxisAngle(
-                new CANNON.Vec3(-1, 0, 0),
-                Math.PI * 0.5
-            );
+            for (let i = 0; i < sizeX; i++) {
+                matrix.push([]);
+                for (var j = 0; j < sizeY; j++) {
+                    var height = Math.cos(i / sizeX * Math.PI * 5) * Math.cos(j / sizeY * Math.PI * 5) * 2 + 2;
+                    if (i === 0 || i === sizeX - 1 || j === 0 || j === sizeY - 1)
+                        height = 3;
+                    matrix[i].push(height);
+                }
+            }
 
+            var hfShape = new CANNON.Heightfield(matrix, {
+                elementSize: 100 / sizeX
+            });
+            var hfBody = new CANNON.Body({ mass: 0 });
+            hfBody.addShape(hfShape);
+            hfBody.position.set(-sizeX * hfShape.elementSize / 2, -4, sizeY * hfShape.elementSize / 2);
+            hfBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+            world.addBody(hfBody);
+
+            var geometry = new THREE.BufferGeometry();
+
+            // Generate vertices and faces based on the height field matrix
+            var vertices = [];
+            var faces = [];
+
+            for (var i = 0; i < sizeX; i++) {
+                for (var j = 0; j < sizeY; j++) {
+                    var x = i * hfShape.elementSize - sizeX * hfShape.elementSize / 2;
+                    var y = matrix[i][j];
+                    var z = -j * hfShape.elementSize + sizeY * hfShape.elementSize / 2;
+                    vertices.push(x, y, z);
+
+                    if (i < sizeX - 1 && j < sizeY - 1) {
+                        var a = i * sizeY + j;
+                        var b = i * sizeY + j + 1;
+                        var c = (i + 1) * sizeY + j;
+                        var d = (i + 1) * sizeY + j + 1;
+                        faces.push(a, b, c);
+                        faces.push(b, d, c);
+                    }
+                }
+            }
+
+            // Set the vertex and index attributes of the geometry
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setIndex(faces);
+
+            // Create material for the height field
+            var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+
+            // Create mesh using the geometry and material
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.position.y = -4
+            // Add the mesh to the scene
+            scene.add(mesh);
+
+            // const floorGeo = new THREE.PlaneGeometry(100, 100);
+            // const floorMesh = new THREE.Mesh(
+            //     floorGeo,
+            //     new THREE.MeshStandardMaterial({
+            //         color: 0xffffff,
+            //         roughness: 0.5,
+            //         metalness: 0,
+            //         emissive: 0xffffff,
+            //         emissiveIntensity: -0.36,
+            //         side: THREE.DoubleSide
+            //     }),
+            // )
+            // floorMesh.rotation.x = -Math.PI * 0.5;
+            // scene.add(floorMesh)
+
+            // const floorS = new CANNON.Plane();
+            // const floorB = new CANNON.Body();
+            // floorB.mass = 0;
+
+            // floorB.addShape(floorS);
+            // world.addBody(floorB);
+
+            // floorB.quaternion.setFromAxisAngle(
+            //     new CANNON.Vec3(-1, 0, 0),
+            //     Math.PI * 0.5
+            // );
 
             const camera = new THREE.PerspectiveCamera(50, sizes.width / sizes.height, 0.1, 10000)
-            camera.position.set(0, 4, 6)
+            camera.position.set(0, 10, -10)
             scene.add(camera)
 
-            // Controls
+
             const controls = new OrbitControls(camera, canvas)
             controls.enableDamping = true
 
-            /**
-             * Renderer
-             */
+
             const renderer = new THREE.WebGLRenderer({
                 canvas: canvas
             })
             renderer.setSize(sizes.width, sizes.height)
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-            /**
-             * Animate
-             */
-            const timeStep = 1 / 60 // seconds
+            const timeStep = 1 / 60
             let lastCallTime = null
             function sleep(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
             await sleep(5000)
             const tick = () => {
+                if (!camera) return
                 try {
-
-
                     stats.begin();
-                    // Update controls
                     controls.update()
-
-
-
-
-                    const time = performance.now() / 1000 // seconds
+                    const time = performance.now() / 1000
                     if (!lastCallTime) {
                         world.step(timeStep)
                     } else {
                         const dt = time - lastCallTime
                         world.step(timeStep, dt)
                     }
+                    //console.log(car.chassis.position.y)
                     world.step(timeStep)
-
                     lastCallTime = time
-
-                    // Render
+                    camera.parent = car.chassis
+                    camera.lookAt(car.chassis.position)
                     renderer.render(scene, camera)
                     stats.end();
 
@@ -436,10 +480,7 @@ export default {
                     console.error(e)
                 }
             }
-
-
             tick()
-
         }
     }
 }

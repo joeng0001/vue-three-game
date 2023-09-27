@@ -12,6 +12,7 @@ import Stats from 'stats.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import starsTexture from '@/assets/img/space2.jpg';
+import testTexture from '@/assets/img/earth.jpg'
 class Car {
     constructor(scene, world) {
         this.scene = scene;
@@ -347,8 +348,8 @@ export default {
 
 
             let matrix = [];
-            let sizeX = 64,
-                sizeY = 64;
+            let sizeX = 128,
+                sizeY = 128;
 
             for (let i = 0; i < sizeX; i++) {
                 matrix.push([]);
@@ -397,9 +398,12 @@ export default {
             geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
             geometry.setIndex(faces);
 
+            const textureLoader = new THREE.TextureLoader();
+            const mapURL = new URL('@/assets/img/sun.jpg', import.meta.url)
+            const testTexture = textureLoader.load(mapURL.href);
             // Create material for the height field
+            //var material = new THREE.MeshBasicMaterial({ map: testTexture, side: THREE.DoubleSide, });
             var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-
             // Create mesh using the geometry and material
             var mesh = new THREE.Mesh(geometry, material);
             mesh.position.y = -4
