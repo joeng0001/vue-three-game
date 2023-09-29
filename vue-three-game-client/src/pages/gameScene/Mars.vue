@@ -20,6 +20,7 @@ class Car {
         this.car = {};
         this.chassis = {};
         this.wheels = [];
+        this.cannonBody = null
         this.chassisDimension = {
             x: 2.65,
             y: 1.25,
@@ -79,6 +80,7 @@ class Car {
     setChassis() {
         const chassisShape = new CANNON.Box(new CANNON.Vec3(this.chassisDimension.x * 0.5, this.chassisDimension.y * 0.5, this.chassisDimension.z * 0.5));
         const chassisBody = new CANNON.Body({ mass: this.mass, material: new CANNON.Material({ friction: 0 }) });
+        this.cannonBody = chassisBody
         chassisBody.addShape(chassisShape);
 
         this.car = new CANNON.RaycastVehicle({
@@ -348,21 +350,21 @@ export default {
 
 
             let matrix = [];
-            let sizeX = 128,
-                sizeY = 128;
+            let sizeX = 256,
+                sizeY = 256;
 
             for (let i = 0; i < sizeX; i++) {
                 matrix.push([]);
                 for (var j = 0; j < sizeY; j++) {
                     var height = Math.cos(i / sizeX * Math.PI * 5) * Math.cos(j / sizeY * Math.PI * 5) * 2 + 2;
                     if (i === 0 || i === sizeX - 1 || j === 0 || j === sizeY - 1)
-                        height = 3;
+                        height = 5;
                     matrix[i].push(height);
                 }
             }
 
             var hfShape = new CANNON.Heightfield(matrix, {
-                elementSize: 100 / sizeX
+                elementSize: 200 / sizeX
             });
             var hfBody = new CANNON.Body({ mass: 0 });
             hfBody.addShape(hfShape);
@@ -410,33 +412,32 @@ export default {
             // Add the mesh to the scene
             scene.add(mesh);
 
-            // const floorGeo = new THREE.PlaneGeometry(100, 100);
-            // const floorMesh = new THREE.Mesh(
-            //     floorGeo,
-            //     new THREE.MeshStandardMaterial({
-            //         color: 0xffffff,
-            //         roughness: 0.5,
-            //         metalness: 0,
-            //         emissive: 0xffffff,
-            //         emissiveIntensity: -0.36,
-            //         side: THREE.DoubleSide
-            //     }),
-            // )
-            // floorMesh.rotation.x = -Math.PI * 0.5;
-            // scene.add(floorMesh)
 
-            // const floorS = new CANNON.Plane();
-            // const floorB = new CANNON.Body();
-            // floorB.mass = 0;
-
-            // floorB.addShape(floorS);
-            // world.addBody(floorB);
-
-            // floorB.quaternion.setFromAxisAngle(
-            //     new CANNON.Vec3(-1, 0, 0),
-            //     Math.PI * 0.5
-            // );
-
+            //iinit trasure
+            const treasure = new URL('@/assets/model/treasure1.glb', import.meta.url)
+            const gltfLoader = new GLTFLoader()
+            const treasureList = []
+            let treasureListLoadedCount = 0
+            for (let i = 0; i < 10; i++) {
+                gltfLoader.load(treasure.href, function (gltf) {
+                    const model = gltf.scene;
+                    scene.add(model);
+                    //model.position.set((Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50))
+                    const boxBody = new CANNON.Body({
+                        mass: 1,
+                        shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)),
+                        position: new CANNON.Vec3(Math.random() * 100 - 50, 50, Math.random() * 100 - 50), //set it falling from sky
+                    });
+                    world.addBody(boxBody);
+                    treasureList.push({
+                        model,
+                        box: new THREE.Box3().setFromObject(model),
+                        cannonBody: boxBody,
+                        needRemove: false
+                    })
+                    treasureListLoadedCount += 1
+                });
+            }
             const camera = new THREE.PerspectiveCamera(50, sizes.width / sizes.height, 0.1, 10000)
             camera.position.set(0, 10, -10)
             scene.add(camera)
@@ -452,39 +453,51 @@ export default {
             renderer.setSize(sizes.width, sizes.height)
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
+            let removingLock = false
+            world.addEventListener('beginContact', (e) => {
+
+                const bodyA = e.bodyA; // First colliding body
+                const bodyB = e.bodyB; // Second colliding body
+
+                if (bodyA === hfBody || bodyB === hfBody) return
+                removingLock = true
+                treasureList.forEach(treasure => {
+                    if ((bodyB === treasure.cannonBody && bodyA === car.cannonBody) || (bodyA === treasure.cannonBody && bodyB === car.cannonBody)) {
+                        treasure.needRemove = true
+                    }
+                })
+                removingLock = false
+
+            });
             const timeStep = 1 / 60
-            let lastCallTime = null
-            function sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-            await sleep(5000)
             const tick = () => {
-                if (!camera) return
+                if (!camera || !car.chassis.position || treasureListLoadedCount != 10) return
+
                 try {
                     stats.begin();
                     controls.update()
-                    const time = performance.now() / 1000
-                    if (!lastCallTime) {
-                        world.step(timeStep)
-                    } else {
-                        const dt = time - lastCallTime
-                        world.step(timeStep, dt)
-                    }
-                    //console.log(car.chassis.position.y)
+
                     world.step(timeStep)
-                    lastCallTime = time
+                    treasureList.map(treasure => {
+                        if (treasure.needRemove) {
+                            scene.remove(treasure.model)
+                            world.removeBody(treasure.cannonBody)
+                        } else {
+                            treasure.model.position.copy(new CANNON.Vec3(treasure.cannonBody.position.x, treasure.cannonBody.position.y - 0.8, treasure.cannonBody.position.z))
+                        }
+                    })
+
+
                     camera.parent = car.chassis
                     camera.lookAt(car.chassis.position)
+
                     renderer.render(scene, camera)
                     stats.end();
-
-                    // Call tick again on the next frame
-                    window.requestAnimationFrame(tick)
                 } catch (e) {
                     console.error(e)
                 }
             }
-            tick()
+            renderer.setAnimationLoop(tick);
         }
     }
 }
