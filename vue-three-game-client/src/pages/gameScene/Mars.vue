@@ -313,14 +313,6 @@ export default {
 
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.4)
             scene.add(ambientLight)
-            const spotLight = new THREE.SpotLight(0x29dfff, 2, 0, 0.9, 1, 0);
-            spotLight.position.set(7, 1.291, -6);
-            const spotLight2 = new THREE.SpotLight(0x943dff, 2, 0, 0.9, 1, 0);
-            spotLight2.position.set(-7, 1.291, -6);
-            const spotLight3 = new THREE.SpotLight(0xd5f8ff, 2, 0, 0.9, 1, 0);
-            spotLight3.position.set(0, 1.291, 7);
-            scene.add(spotLight, spotLight2, spotLight3);
-
 
             const axesHelper = new THREE.AxesHelper(100);
             scene.add(axesHelper);
@@ -400,18 +392,12 @@ export default {
             geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
             geometry.setIndex(faces);
 
-            const textureLoader = new THREE.TextureLoader();
-            const mapURL = new URL('@/assets/img/sun.jpg', import.meta.url)
-            const testTexture = textureLoader.load(mapURL.href);
-            // Create material for the height field
-            //var material = new THREE.MeshBasicMaterial({ map: testTexture, side: THREE.DoubleSide, });
             var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
             // Create mesh using the geometry and material
             var mesh = new THREE.Mesh(geometry, material);
             mesh.position.y = -4
             // Add the mesh to the scene
             scene.add(mesh);
-
 
             //iinit trasure
             const treasure = new URL('@/assets/model/treasure1.glb', import.meta.url)
