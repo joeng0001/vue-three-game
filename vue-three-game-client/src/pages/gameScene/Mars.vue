@@ -285,7 +285,7 @@ export default {
     methods: {
         async initScene() {
             console.log("loading")
-            var stats = new Stats();
+            let stats = new Stats();
             stats.showPanel(0);
             document.body.appendChild(stats.dom);
             const canvas = this.$refs.three
@@ -347,54 +347,63 @@ export default {
 
             for (let i = 0; i < sizeX; i++) {
                 matrix.push([]);
-                for (var j = 0; j < sizeY; j++) {
-                    var height = Math.cos(i / sizeX * Math.PI * 5) * Math.cos(j / sizeY * Math.PI * 5) * 2 + 2;
+                for (let j = 0; j < sizeY; j++) {
+                    let height = Math.cos(i / sizeX * Math.PI * 5) * Math.cos(j / sizeY * Math.PI * 5) * 2 + 2;
                     if (i === 0 || i === sizeX - 1 || j === 0 || j === sizeY - 1)
                         height = 5;
                     matrix[i].push(height);
                 }
             }
 
-            var hfShape = new CANNON.Heightfield(matrix, {
+            let hfShape = new CANNON.Heightfield(matrix, {
                 elementSize: 200 / sizeX
             });
-            var hfBody = new CANNON.Body({ mass: 0 });
+            let hfBody = new CANNON.Body({ mass: 0 });
             hfBody.addShape(hfShape);
             hfBody.position.set(-sizeX * hfShape.elementSize / 2, -4, sizeY * hfShape.elementSize / 2);
             hfBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
             world.addBody(hfBody);
 
-            var geometry = new THREE.BufferGeometry();
+            let geometry = new THREE.BufferGeometry();
 
             // Generate vertices and faces based on the height field matrix
-            var vertices = [];
-            var faces = [];
+            let vertices = [];
+            let faces = [];
             const colors = [];
             const color = new THREE.Color();
-            for (var i = 0; i < sizeX; i++) {
-                for (var j = 0; j < sizeY; j++) {
-                    var x = i * hfShape.elementSize - sizeX * hfShape.elementSize / 2;
-                    var y = matrix[i][j];
-                    var z = -j * hfShape.elementSize + sizeY * hfShape.elementSize / 2;
+            const preDefineColors = [
+
+
+                [0.7647058823529411, 0.3137254901960784, 0.1411764705882353],  // Mars Orange
+                [0.8274509803921568, 0.4117647058823529, 0.19607843137254902], // Dusty Brown
+
+            ]
+            for (let i = 0; i < sizeX; i++) {
+                for (let j = 0; j < sizeY; j++) {
+                    let x = i * hfShape.elementSize - sizeX * hfShape.elementSize / 2;
+                    let y = matrix[i][j];
+                    let z = -j * hfShape.elementSize + sizeY * hfShape.elementSize / 2;
                     vertices.push(x, y, z);
                     const color = new THREE.Color();
-                    const vx = (x / 1000) + 0.5;
-                    const vy = (y / 1000) + 0.5;
-                    const vz = (z / 1000) + 0.5;
+                    // if (y > 0 && y < 1) {
+                    //     color.setRGB(preDefineColors[0][0], preDefineColors[0][1], preDefineColors[0][2]);
+                    // } else if (y >= 1 && y < 2) {
+                    //     color.setRGB(preDefineColors[1][0], preDefineColors[1][1], preDefineColors[1][2]);
+                    // } else if (y >= 2 && y < 3) {
+                    //     color.setRGB(preDefineColors[2][0], preDefineColors[2][1], preDefineColors[2][2]);
+                    // } else if (y >= 3 && y < 4) {
+                    //     color.setRGB(preDefineColors[3][0], preDefineColors[3][1], preDefineColors[3][2]);
+                    // }
+                    let randomIndex = Math.floor(Math.random() * preDefineColors.length)
+                    color.setRGB(preDefineColors[randomIndex][0], preDefineColors[randomIndex][1], preDefineColors[randomIndex][2]);
 
-                    color.setRGB(vx, vy, vz);
-                    if (y > 0.5) {
-                        color.setRGB(vx, 0xFF, vz);
-                    } else {
-                        color.setRGB(vx, vy, vz);
-                    }
                     colors.push(color.r, color.g, color.b);
 
                     if (i < sizeX - 1 && j < sizeY - 1) {
-                        var a = i * sizeY + j;
-                        var b = i * sizeY + j + 1;
-                        var c = (i + 1) * sizeY + j;
-                        var d = (i + 1) * sizeY + j + 1;
+                        let a = i * sizeY + j;
+                        let b = i * sizeY + j + 1;
+                        let c = (i + 1) * sizeY + j;
+                        let d = (i + 1) * sizeY + j + 1;
                         faces.push(a, b, c);
                         faces.push(b, d, c);
                     }
@@ -406,12 +415,12 @@ export default {
             geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
             geometry.setIndex(faces);
             //const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, wireframe: true })
-            var material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, vertexColors: true });
+            let material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, vertexColors: true });
 
 
-            //var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+            //let material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
             // Create mesh using the geometry and material
-            var mesh = new THREE.Mesh(geometry, material);
+            let mesh = new THREE.Mesh(geometry, material);
             mesh.position.y = -4
             // Add the mesh to the scene
             scene.add(mesh);
