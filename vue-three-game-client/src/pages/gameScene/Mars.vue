@@ -1,6 +1,11 @@
 <template>
     <div>
         <canvas ref="three"></canvas>
+        <div class="marksPanel">
+            <div class="marksBar">
+                {{ marks }}/10
+            </div>
+        </div>
     </div>
 </template>
 
@@ -276,7 +281,7 @@ class Car {
 export default {
     data() {
         return {
-
+            marks: 0
         }
     },
     mounted() {
@@ -348,7 +353,7 @@ export default {
             for (let i = 0; i < sizeX; i++) {
                 matrix.push([]);
                 for (let j = 0; j < sizeY; j++) {
-                    let height = Math.cos(i / sizeX * Math.PI * 5) * Math.cos(j / sizeY * Math.PI * 5) * 2 + 2;
+                    let height = Math.cos(i / sizeX * Math.PI * 5) * Math.cos(j / sizeY * Math.PI * 5) * 3 + 2;
                     if (i === 0 || i === sizeX - 1 || j === 0 || j === sizeY - 1)
                         height = 5;
                     matrix[i].push(height);
@@ -385,16 +390,7 @@ export default {
                     let z = -j * hfShape.elementSize + sizeY * hfShape.elementSize / 2;
                     vertices.push(x, y, z);
                     const color = new THREE.Color();
-                    // if (y > 0 && y < 1) {
-                    //     color.setRGB(preDefineColors[0][0], preDefineColors[0][1], preDefineColors[0][2]);
-                    // } else if (y >= 1 && y < 2) {
-                    //     color.setRGB(preDefineColors[1][0], preDefineColors[1][1], preDefineColors[1][2]);
-                    // } else if (y >= 2 && y < 3) {
-                    //     color.setRGB(preDefineColors[2][0], preDefineColors[2][1], preDefineColors[2][2]);
-                    // } else if (y >= 3 && y < 4) {
-                    //     color.setRGB(preDefineColors[3][0], preDefineColors[3][1], preDefineColors[3][2]);
-                    // }
-                    let randomIndex = Math.floor(Math.random() * preDefineColors.length)
+                    const randomIndex = Math.floor(Math.random() * preDefineColors.length)
                     color.setRGB(preDefineColors[randomIndex][0], preDefineColors[randomIndex][1], preDefineColors[randomIndex][2]);
 
                     colors.push(color.r, color.g, color.b);
@@ -479,6 +475,7 @@ export default {
                 treasureList.forEach(treasure => {
                     if ((bodyB === treasure.cannonBody && bodyA === car.cannonBody) || (bodyA === treasure.cannonBody && bodyB === car.cannonBody)) {
                         treasure.needRemove = true
+                        this.marks += 1
                     }
                 })
                 removingLock = false
@@ -518,4 +515,23 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.marksPanel {
+    z-index: 99;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.marksBar {
+    position: absolute;
+    top: 5%;
+    background-color: white;
+    font-family: fantasy;
+    font-size: 16px;
+    font-weight: 300;
+    text-align: center;
+    margin-left: 10px;
+    display: flex;
+}
+</style>

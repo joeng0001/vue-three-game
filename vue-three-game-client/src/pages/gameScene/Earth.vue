@@ -72,7 +72,7 @@ export default {
 
             const phongMaterial = new THREE.MeshPhongMaterial()
             const world = new CANNON.World()
-            world.gravity.set(0, -9.82 * 5, 0)
+            world.gravity.set(0, -9.82, 0)
 
             const groundMaterial = new CANNON.Material('groundMaterial')
             groundMaterial.friction = 0.25
@@ -96,6 +96,7 @@ export default {
             world.addBody(groundBody)
 
             //jumps
+            const jumpsList = []
             for (let i = 0; i < 100; i++) {
                 const jump = new THREE.Mesh(
                     new THREE.CylinderGeometry(0, 1, 0.5, 5),
@@ -113,6 +114,7 @@ export default {
                 cylinderBody.position.y = jump.position.y
                 cylinderBody.position.z = jump.position.z
                 world.addBody(cylinderBody)
+                jumpsList.push({ model: jump, cannonBody: cylinderBody, needRemove: false })
             }
 
             const carBodyGeometry = new THREE.BoxGeometry(1, 1, 2)
@@ -248,6 +250,23 @@ export default {
             constraintLB.enableMotor()
             constraintRB.enableMotor()
 
+
+            world.addEventListener('beginContact', (e) => {
+
+                const bodyA = e.bodyA; // First colliding body
+                const bodyB = e.bodyB; // Second colliding body
+                if (bodyA?.material?.name === "groundMaterial" || bodyB?.material?.name === "groundMaterial") return
+                //console.log("collsion", bodyA, bodyB)
+
+                jumpsList.forEach(jump => {
+                    if ((bodyB === jump.cannonBody) || (bodyA === jump.cannonBody)) {
+                        console.log("find match")
+                        jump.needRemove = true
+                    }
+                })
+
+            });
+
             const keyMap = {}
             const onDocumentKey = (e) => {
                 keyMap[e.code] = e.type === 'keydown'
@@ -299,7 +318,12 @@ export default {
 
                 delta = Math.min(clock.getDelta(), 0.1)
                 world.step(delta)
-
+                jumpsList.forEach(jump => {
+                    if (jump.needRemove) {
+                        scene.remove(jump.model)
+                        world.removeBody(jump.cannonBody)
+                    }
+                })
 
 
                 // Copy coordinates from Cannon to Three.js
