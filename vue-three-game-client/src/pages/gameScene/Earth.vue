@@ -9,8 +9,8 @@ import * as THREE from 'three'
 import Stats from 'three/examples/jsm/libs/stats.module'
 import { GUI } from 'dat.gui'
 import * as CANNON from 'cannon-es'
-
-
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import earthTexture from '@/assets/img/earth.jpg';
 
 
 export default {
@@ -64,10 +64,15 @@ export default {
             renderer.shadowMap.type = THREE.PCFSoftShadowMap
             document.body.appendChild(renderer.domElement)
 
-            const phongMaterial = new THREE.MeshPhongMaterial()
+            //!!
+            const mapUrl = new URL('@/assets/img/earth.jpg', import.meta.url)
+            const textureLoader = new THREE.TextureLoader();
+            const texture = textureLoader.load(mapUrl.href);
+            const mapMaterial = new THREE.MeshPhongMaterial({ map: texture, side: THREE.DoubleSide })
 
+            const phongMaterial = new THREE.MeshPhongMaterial()
             const world = new CANNON.World()
-            world.gravity.set(0, -9.82, 0)
+            world.gravity.set(0, -9.82 * 5, 0)
 
             const groundMaterial = new CANNON.Material('groundMaterial')
             groundMaterial.friction = 0.25
@@ -79,7 +84,8 @@ export default {
 
             //ground
             const groundGeometry = new THREE.PlaneGeometry(100, 100)
-            const groundMesh = new THREE.Mesh(groundGeometry, phongMaterial)
+
+            const groundMesh = new THREE.Mesh(groundGeometry, mapMaterial)
             groundMesh.rotateX(-Math.PI / 2)
             groundMesh.receiveShadow = true
             scene.add(groundMesh)
@@ -270,6 +276,13 @@ export default {
             physicsFolder.add(world.gravity, 'y', -10.0, 10.0, 0.1)
             physicsFolder.add(world.gravity, 'z', -10.0, 10.0, 0.1)
             physicsFolder.open()
+            const positionFolder = gui.addFolder('Position')
+            positionFolder.add({
+                resetPosition: () => {
+                    carBody.position.set(0, 50, 0);
+                    carBody.quaternion.set(0, 0, 0, 0)
+                }
+            }, 'resetPosition').name('Reset');
 
             const clock = new THREE.Clock()
             let delta
@@ -396,7 +409,6 @@ export default {
                     v.y = 1
                 }
                 camera.position.lerpVectors(camera.position, v, 0.05)
-
                 render()
 
                 stats.update()

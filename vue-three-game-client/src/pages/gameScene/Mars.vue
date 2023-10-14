@@ -311,7 +311,7 @@ export default {
             )
             world.addContactMaterial(bodyGroundContactMaterial)
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4)
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
             scene.add(ambientLight)
 
             const axesHelper = new THREE.AxesHelper(100);
@@ -369,13 +369,26 @@ export default {
             // Generate vertices and faces based on the height field matrix
             var vertices = [];
             var faces = [];
-
+            const colors = [];
+            const color = new THREE.Color();
             for (var i = 0; i < sizeX; i++) {
                 for (var j = 0; j < sizeY; j++) {
                     var x = i * hfShape.elementSize - sizeX * hfShape.elementSize / 2;
                     var y = matrix[i][j];
                     var z = -j * hfShape.elementSize + sizeY * hfShape.elementSize / 2;
                     vertices.push(x, y, z);
+                    const color = new THREE.Color();
+                    const vx = (x / 1000) + 0.5;
+                    const vy = (y / 1000) + 0.5;
+                    const vz = (z / 1000) + 0.5;
+
+                    color.setRGB(vx, vy, vz);
+                    if (y > 0.5) {
+                        color.setRGB(vx, 0xFF, vz);
+                    } else {
+                        color.setRGB(vx, vy, vz);
+                    }
+                    colors.push(color.r, color.g, color.b);
 
                     if (i < sizeX - 1 && j < sizeY - 1) {
                         var a = i * sizeY + j;
@@ -390,9 +403,13 @@ export default {
 
             // Set the vertex and index attributes of the geometry
             geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
             geometry.setIndex(faces);
+            //const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, wireframe: true })
+            var material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, vertexColors: true });
 
-            var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+
+            //var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
             // Create mesh using the geometry and material
             var mesh = new THREE.Mesh(geometry, material);
             mesh.position.y = -4
@@ -424,7 +441,7 @@ export default {
                     treasureListLoadedCount += 1
                 });
             }
-            const camera = new THREE.PerspectiveCamera(50, sizes.width / sizes.height, 0.1, 10000)
+            const camera = new THREE.PerspectiveCamera(60, sizes.width / sizes.height, 0.1, 10000)
             camera.position.set(0, 10, -10)
             scene.add(camera)
 
@@ -438,6 +455,9 @@ export default {
             })
             renderer.setSize(sizes.width, sizes.height)
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+
+
 
             let removingLock = false
             world.addEventListener('beginContact', (e) => {
