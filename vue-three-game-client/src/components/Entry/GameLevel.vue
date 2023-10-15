@@ -14,28 +14,36 @@
                 <v-container>
                     <v-row>
                         <v-col cols="3">
-                            <v-btn class="btn" style="color:Aquamarine;">1</v-btn>
+                            <v-btn class="btn" style="color:Aquamarine;"
+                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=1`)">1</v-btn>
                         </v-col>
                         <v-col cols="3">
-                            <v-btn class="btn" style="color:GreenYellow;">2</v-btn>
+                            <v-btn class="btn" style="color:GreenYellow;"
+                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=2`)">2</v-btn>
                         </v-col>
                         <v-col cols="3">
-                            <v-btn class="btn" style="color:DeepSkyBlue;">3</v-btn>
+                            <v-btn class="btn" style="color:DeepSkyBlue;"
+                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=3`)">3</v-btn>
                         </v-col>
                         <v-col cols="3">
-                            <v-btn class="btn" style="color:Lime;">4</v-btn>
+                            <v-btn class="btn" style="color:Lime;"
+                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=4`)">4</v-btn>
                         </v-col>
                         <v-col cols="3">
-                            <v-btn class="btn" style="color:Crimson;">5</v-btn>
+                            <v-btn class="btn" style="color:Crimson;"
+                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=5`)">5</v-btn>
                         </v-col>
                         <v-col cols="3">
-                            <v-btn class="btn" style="color:darkred;">6</v-btn>
+                            <v-btn class="btn" style="color:darkred;"
+                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=6`)">6</v-btn>
                         </v-col>
                         <v-col cols="3">
-                            <v-btn class="btn" style="color:DeepPink;">7</v-btn>
+                            <v-btn class="btn" style="color:DeepPink;"
+                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=7`)">7</v-btn>
                         </v-col>
                         <v-col cols="3">
-                            <v-btn class="btn" style="color:magenta;">8</v-btn>
+                            <v-btn class="btn" style="color:magenta;"
+                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=8`)">8</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -168,5 +176,4 @@ export default {
     100% {
         bottom: 100%;
     }
-}
-</style>
+}</style>

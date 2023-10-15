@@ -12,9 +12,11 @@
             <!--after pick the scene,move the camera the the game scenario-->
             <v-card-actions class="d-flex justify-space-between mt-4">
                 <v-btn class="btn" style="color:Aquamarine;"
-                    @click="() => $router.push('/Entry/gameLevel')">Universe</v-btn>
-                <v-btn class="btn" style="color:GreenYellow;" @click="() => $router.push('/Entry/gameLevel')">Earth</v-btn>
-                <v-btn class="btn" style="color:orange;" @click="() => $router.push('/Entry/gameLevel')">Mars</v-btn>
+                    @click="() => $router.push('/Entry/gameLevel?scene=Universe')">Universe</v-btn>
+                <v-btn class="btn" style="color:GreenYellow;"
+                    @click="() => $router.push('/Entry/gameLevel?scene=Earth')">Earth</v-btn>
+                <v-btn class="btn" style="color:orange;"
+                    @click="() => $router.push('/Entry/gameLevel?scene=Mars')">Mars</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
