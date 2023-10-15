@@ -98,6 +98,7 @@ export default {
             //jumps
             const jumpsList = []
             for (let i = 0; i < 100; i++) {
+                const phongMaterial = new THREE.MeshPhongMaterial()
                 const jump = new THREE.Mesh(
                     new THREE.CylinderGeometry(0, 1, 0.5, 5),
                     phongMaterial
@@ -114,7 +115,7 @@ export default {
                 cylinderBody.position.y = jump.position.y
                 cylinderBody.position.z = jump.position.z
                 world.addBody(cylinderBody)
-                jumpsList.push({ model: jump, cannonBody: cylinderBody, needRemove: false })
+                jumpsList.push({ model: jump, cannonBody: cylinderBody, touched: false })
             }
 
             const carBodyGeometry = new THREE.BoxGeometry(1, 1, 2)
@@ -260,8 +261,10 @@ export default {
 
                 jumpsList.forEach(jump => {
                     if ((bodyB === jump.cannonBody) || (bodyA === jump.cannonBody)) {
-                        console.log("find match")
-                        jump.needRemove = true
+                        console.log("find match", jump.model)
+                        jump.model.material.color.r = jump.model.material.color.b = 0
+                        jump.model.material.color.g = 1
+                        //jump.touched = true
                     }
                 })
 
@@ -318,12 +321,13 @@ export default {
 
                 delta = Math.min(clock.getDelta(), 0.1)
                 world.step(delta)
-                jumpsList.forEach(jump => {
-                    if (jump.needRemove) {
-                        scene.remove(jump.model)
-                        world.removeBody(jump.cannonBody)
-                    }
-                })
+                // jumpsList.forEach(jump => {
+                //     if (jump.touched) {
+                //         scene.remove(jump.model)
+                //         world.removeBody(jump.cannonBody)
+                //         
+                //     }
+                // })
 
 
                 // Copy coordinates from Cannon to Three.js

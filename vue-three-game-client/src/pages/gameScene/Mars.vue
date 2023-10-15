@@ -2,8 +2,15 @@
     <div>
         <canvas ref="three"></canvas>
         <div class="marksPanel">
-            <div class="marksBar">
-                {{ marks }}/10
+            <div class="bar">
+                <div class="marks"> Marks: &nbsp;{{ marks }}/10 </div>
+                <div style="display:flex;align-items: center;">
+                    Life: &nbsp;
+                    <v-progress-linear :model-value="life" max="10" bg-color="black" color="success" class="lifeBar" />
+
+                </div>
+
+
             </div>
         </div>
     </div>
@@ -18,6 +25,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import starsTexture from '@/assets/img/space2.jpg';
 import testTexture from '@/assets/img/earth.jpg'
+import { GUI } from 'dat.gui'
 class Car {
     constructor(scene, world) {
         this.scene = scene;
@@ -281,7 +289,8 @@ class Car {
 export default {
     data() {
         return {
-            marks: 0
+            marks: 0,
+            life: 10
         }
     },
     mounted() {
@@ -430,7 +439,6 @@ export default {
                 gltfLoader.load(treasure.href, function (gltf) {
                     const model = gltf.scene;
                     scene.add(model);
-                    //model.position.set((Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50))
                     const boxBody = new CANNON.Body({
                         mass: 1,
                         shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)),
@@ -451,6 +459,44 @@ export default {
             scene.add(camera)
 
 
+            const rocksList = []
+            const rockUrl = new URL('@/assets/model/rock.glb', import.meta.url)
+            setInterval(() => {
+                for (let i = 0; i < 10; i++) {
+                    gltfLoader.load(rockUrl.href, function (gltf) {
+                        const model = gltf.scene;
+                        scene.add(model);
+                        model.scale.set(Math.random() * (0.005 - 0.001) + 0.001, Math.random() * (0.005 - 0.001) + 0.001, Math.random() * (0.005 - 0.001) + 0.001)
+                        model.position.set(Math.random() * (200) - 100, Math.random() * (200) - 100, Math.random() * (200) - 100)
+                        const rockShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.3))
+                        const rockBody = new CANNON.Body({ mass: 100 })
+                        rockBody.addShape(rockShape)
+                        rockBody.position.x = model.position.x
+                        rockBody.position.y = model.position.y
+                        rockBody.position.z = model.position.z
+                        world.addBody(rockBody)
+
+                        rocksList.push({ model, cannonBody: rockBody, touchedGround: false })
+                    });
+                }
+            }, 5000)
+
+
+            const gui = new GUI()
+
+            const positionFolder = gui.addFolder('Position')
+            positionFolder.add({
+                resetPosition: () => {
+
+                    console.log("reseting", car.cannonBody)
+                    var newPosition = new CANNON.Vec3(car.cannonBody.position.x, 10, car.cannonBody.position.z); // Adjust x, y, z as needed
+                    car.cannonBody.position.copy(newPosition);
+                    car.cannonBody.velocity.set(0, 0, 0);
+                    car.cannonBody.angularVelocity.set(0, 0, 0);
+                }
+            }, 'resetPosition').name('Reset');
+
+
             const controls = new OrbitControls(camera, canvas)
             controls.enableDamping = true
 
@@ -462,23 +508,33 @@ export default {
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 
-
-
-            let removingLock = false
             world.addEventListener('beginContact', (e) => {
 
                 const bodyA = e.bodyA; // First colliding body
                 const bodyB = e.bodyB; // Second colliding body
 
-                if (bodyA === hfBody || bodyB === hfBody) return
-                removingLock = true
+                //if (bodyA === hfBody || bodyB === hfBody) return
                 treasureList.forEach(treasure => {
                     if ((bodyB === treasure.cannonBody && bodyA === car.cannonBody) || (bodyA === treasure.cannonBody && bodyB === car.cannonBody)) {
                         treasure.needRemove = true
                         this.marks += 1
                     }
                 })
-                removingLock = false
+
+
+                rocksList.forEach(rock => {
+                    if ((bodyA === rock.cannonBody && bodyB === car.cannonBody || bodyB === rock.cannonBody && bodyA === car.cannonBody) && !rock.touchedGround) {
+                        console.log("rock hit car")
+                        this.life -= 1
+                        console.log(this.life)
+                        rock.touchedGround = true
+                    }
+                    if (bodyA === rock.cannonBody && bodyB === hfBody || bodyB === rock.cannonBody && bodyA === hfBody) {
+                        //console.log("rock touch ground")
+                        rock.touchedGround = true
+                    }
+                })
+
 
             });
             const timeStep = 1 / 60
@@ -498,6 +554,21 @@ export default {
                             treasure.model.position.copy(new CANNON.Vec3(treasure.cannonBody.position.x, treasure.cannonBody.position.y - 0.8, treasure.cannonBody.position.z))
                         }
                     })
+
+                    rocksList.forEach(rock => {
+                        rock.model.position.set(
+                            rock.cannonBody.position.x,
+                            rock.cannonBody.position.y,
+                            rock.cannonBody.position.z
+                        )
+                        rock.model.quaternion.set(
+                            rock.cannonBody.quaternion.x,
+                            rock.cannonBody.quaternion.y,
+                            rock.cannonBody.quaternion.z,
+                            rock.cannonBody.quaternion.w
+                        )
+                    })
+
 
 
                     camera.parent = car.chassis
@@ -523,15 +594,24 @@ export default {
     justify-content: center;
 }
 
-.marksBar {
+.bar {
     position: absolute;
     top: 5%;
-    background-color: white;
+
     font-family: fantasy;
     font-size: 16px;
     font-weight: 300;
     text-align: center;
     margin-left: 10px;
-    display: flex;
+}
+
+.marks {
+    background-color: white;
+}
+
+.lifeBar {
+    height: 44px;
+    width: 60px;
+    margin-top: 5px;
 }
 </style>
