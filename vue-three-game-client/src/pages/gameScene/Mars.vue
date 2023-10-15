@@ -4,12 +4,16 @@
         <div class="marksPanel">
             <div class="bar">
                 <div class="marks"> Marks: &nbsp;{{ marks }}/10 </div>
-                <div style="display:flex;align-items: center;">
-                    Life: &nbsp;
-                    <v-progress-linear :model-value="life" max="10" bg-color="black" color="success" class="lifeBar" />
+                <div style="display:flex;align-items: center;justify-content: space-between;">
+                    <span>Oil: </span>
+                    <v-progress-linear :model-value="oil" max="10" bg-color="white" color="success" class="oilBar" />
 
                 </div>
+                <div style="display:flex;align-items: center;justify-content: space-between;">
+                    <span>Energy: </span>
+                    <v-progress-linear :model-value="energy" max="10" bg-color="white" color="primary" class="oilBar" />
 
+                </div>
 
             </div>
         </div>
@@ -41,7 +45,7 @@ class Car {
         };
         this.chassisModelPos = {
             x: 0,
-            y: -0.9499999999999993,
+            y: -0.95,
             z: 0.02
         };
         this.wheelScale = {
@@ -49,6 +53,8 @@ class Car {
             hindWheel: 0.01
         };
         this.mass = 250;
+        this.oil = 10
+        this.energy = 10
     }
 
     init() {
@@ -118,7 +124,7 @@ class Car {
             maxSuspensionForce: 10000,
             rollInfluence: 0.01,
             axleLocal: new CANNON.Vec3(-1, 0, 0),
-            chassisConnectionPointLocal: new CANNON.Vec3(0.5899999999999999, 0.1, -1.75),
+            chassisConnectionPointLocal: new CANNON.Vec3(0.59, 0.1, -1.75),
             maxSuspensionTravel: 1,
             customSlidingRotationalSpeed: 30,
         });
@@ -133,7 +139,7 @@ class Car {
             maxSuspensionForce: 10000,
             rollInfluence: 0.01,
             axleLocal: new CANNON.Vec3(-1, 0, 0),
-            chassisConnectionPointLocal: new CANNON.Vec3(-0.5899999999999999, 0.1, -1.75),
+            chassisConnectionPointLocal: new CANNON.Vec3(-0.59, 0.1, -1.75),
             maxSuspensionTravel: 1,
             customSlidingRotationalSpeed: 30,
         });
@@ -148,7 +154,7 @@ class Car {
             maxSuspensionForce: 10000,
             rollInfluence: 0.01,
             axleLocal: new CANNON.Vec3(-1, 0, 0),
-            chassisConnectionPointLocal: new CANNON.Vec3(0.5899999999999999, 0.1, 1.75),
+            chassisConnectionPointLocal: new CANNON.Vec3(0.59, 0.1, 1.75),
             maxSuspensionTravel: 1,
             customSlidingRotationalSpeed: 30,
         });
@@ -163,7 +169,7 @@ class Car {
             maxSuspensionForce: 10000,
             rollInfluence: 0.01,
             axleLocal: new CANNON.Vec3(-1, 0, 0),
-            chassisConnectionPointLocal: new CANNON.Vec3(-0.5899999999999999, 0.1, 1.75),
+            chassisConnectionPointLocal: new CANNON.Vec3(-0.59, 0.1, 1.75),
             maxSuspensionTravel: 1,
             customSlidingRotationalSpeed: 30,
         });
@@ -182,7 +188,7 @@ class Car {
 
     controls() {
         const maxSteerVal = 0.2;
-        const maxForce = 200;
+        let maxForce = 200
         const brakeForce = 36;
         const slowDownCar = 19.6;
         const keysPressed = [];
@@ -217,13 +223,22 @@ class Car {
                 }
                 else stopSteer();
 
+
+                if (keysPressed.includes("shift")) {
+                    maxForce = 300
+                    this.energy -= 0.05
+                } else {
+                    this.energy += 0.001
+                }
                 if (keysPressed.includes("w") || keysPressed.includes("arrowup")) {
+                    this.oil -= 0.001
                     this.car.applyEngineForce(maxForce * -1, 0);
                     this.car.applyEngineForce(maxForce * -1, 1);
                     this.car.applyEngineForce(maxForce * -1, 2);
                     this.car.applyEngineForce(maxForce * -1, 3);
                 }
                 else if (keysPressed.includes("s") || keysPressed.includes("arrowdown")) {
+                    this.oil -= 0.001
                     this.car.applyEngineForce(maxForce * 1, 0);
                     this.car.applyEngineForce(maxForce * 1, 1);
                     this.car.applyEngineForce(maxForce * 1, 2);
@@ -290,7 +305,8 @@ export default {
     data() {
         return {
             marks: 0,
-            life: 10
+            oil: 10,
+            energy: 10
         }
     },
     mounted() {
@@ -384,13 +400,9 @@ export default {
             let vertices = [];
             let faces = [];
             const colors = [];
-            const color = new THREE.Color();
             const preDefineColors = [
-
-
                 [0.7647058823529411, 0.3137254901960784, 0.1411764705882353],  // Mars Orange
                 [0.8274509803921568, 0.4117647058823529, 0.19607843137254902], // Dusty Brown
-
             ]
             for (let i = 0; i < sizeX; i++) {
                 for (let j = 0; j < sizeY; j++) {
@@ -433,7 +445,7 @@ export default {
             //iinit trasure
             const treasure = new URL('@/assets/model/treasure1.glb', import.meta.url)
             const gltfLoader = new GLTFLoader()
-            const treasureList = []
+            let treasureList = []
             let treasureListLoadedCount = 0
             for (let i = 0; i < 10; i++) {
                 gltfLoader.load(treasure.href, function (gltf) {
@@ -459,38 +471,49 @@ export default {
             scene.add(camera)
 
 
-            const rocksList = []
+            let rocksList = []
             const rockUrl = new URL('@/assets/model/rock.glb', import.meta.url)
-            setInterval(() => {
-                for (let i = 0; i < 10; i++) {
-                    gltfLoader.load(rockUrl.href, function (gltf) {
-                        const model = gltf.scene;
-                        scene.add(model);
-                        model.scale.set(Math.random() * (0.005 - 0.001) + 0.001, Math.random() * (0.005 - 0.001) + 0.001, Math.random() * (0.005 - 0.001) + 0.001)
-                        model.position.set(Math.random() * (200) - 100, Math.random() * (200) - 100, Math.random() * (200) - 100)
-                        const rockShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.3))
-                        const rockBody = new CANNON.Body({ mass: 100 })
-                        rockBody.addShape(rockShape)
-                        rockBody.position.x = model.position.x
-                        rockBody.position.y = model.position.y
-                        rockBody.position.z = model.position.z
-                        world.addBody(rockBody)
-
-                        rocksList.push({ model, cannonBody: rockBody, touchedGround: false })
+            let rockModel
+            gltfLoader.load(rockUrl.href, async function (gltf) {
+                rockModel = gltf.scene;
+                for (let i = 0; i < 25; i++) {
+                    await new Promise(resolve => {
+                        setTimeout(resolve, 1000);
                     });
-                }
-            }, 5000)
+                    const model = rockModel.clone();
+                    //console.log("model", model)
 
+                    model.scale.set(Math.random() * (0.1 - 0.05) + 0.05, Math.random() * (0.1 - 0.05) + 0.05, Math.random() * (0.1 - 0.05) + 0.05)
+                    model.position.set(Math.random() * (200) - 100, Math.random() * (200) - 100, Math.random() * (200) - 100)
+                    scene.add(model);
+
+                    const threeBox = new THREE.Box3().setFromObject(model)
+                    var threeBoxSize = new THREE.Vector3();
+                    threeBox.getSize(threeBoxSize);
+                    var boxSize = new CANNON.Vec3(threeBoxSize.x / 2, threeBoxSize.y / 2, threeBoxSize.z / 2);
+                    const rockShape = new CANNON.Box(boxSize)
+                    const rockBody = new CANNON.Body({ mass: 100 })
+                    rockBody.addShape(rockShape)
+                    rockBody.position.x = model.position.x
+                    rockBody.position.y = model.position.y
+                    rockBody.position.z = model.position.z
+                    world.addBody(rockBody)
+
+                    rocksList.push({ model, cannonBody: rockBody })
+
+                }
+            });
 
             const gui = new GUI()
 
             const positionFolder = gui.addFolder('Position')
             positionFolder.add({
                 resetPosition: () => {
-
                     console.log("reseting", car.cannonBody)
-                    var newPosition = new CANNON.Vec3(car.cannonBody.position.x, 10, car.cannonBody.position.z); // Adjust x, y, z as needed
+                    const newPosition = new CANNON.Vec3(car.cannonBody.position.x, 10, car.cannonBody.position.z); // Adjust x, y, z as needed
+                    const resetQuaternion = new CANNON.Quaternion();
                     car.cannonBody.position.copy(newPosition);
+                    car.cannonBody.quaternion.copy(resetQuaternion);
                     car.cannonBody.velocity.set(0, 0, 0);
                     car.cannonBody.angularVelocity.set(0, 0, 0);
                 }
@@ -513,29 +536,13 @@ export default {
                 const bodyA = e.bodyA; // First colliding body
                 const bodyB = e.bodyB; // Second colliding body
 
-                //if (bodyA === hfBody || bodyB === hfBody) return
+                if (bodyA === hfBody || bodyB === hfBody) return
                 treasureList.forEach(treasure => {
                     if ((bodyB === treasure.cannonBody && bodyA === car.cannonBody) || (bodyA === treasure.cannonBody && bodyB === car.cannonBody)) {
                         treasure.needRemove = true
                         this.marks += 1
                     }
                 })
-
-
-                rocksList.forEach(rock => {
-                    if ((bodyA === rock.cannonBody && bodyB === car.cannonBody || bodyB === rock.cannonBody && bodyA === car.cannonBody) && !rock.touchedGround) {
-                        console.log("rock hit car")
-                        this.life -= 1
-                        console.log(this.life)
-                        rock.touchedGround = true
-                    }
-                    if (bodyA === rock.cannonBody && bodyB === hfBody || bodyB === rock.cannonBody && bodyA === hfBody) {
-                        //console.log("rock touch ground")
-                        rock.touchedGround = true
-                    }
-                })
-
-
             });
             const timeStep = 1 / 60
             const tick = () => {
@@ -546,20 +553,21 @@ export default {
                     controls.update()
 
                     world.step(timeStep)
-                    treasureList.map(treasure => {
+                    treasureList.forEach(treasure => {
                         if (treasure.needRemove) {
                             scene.remove(treasure.model)
                             world.removeBody(treasure.cannonBody)
+                            treasureList = treasureList.filter(item => item !== treasure)
                         } else {
                             treasure.model.position.copy(new CANNON.Vec3(treasure.cannonBody.position.x, treasure.cannonBody.position.y - 0.8, treasure.cannonBody.position.z))
                         }
                     })
 
                     rocksList.forEach(rock => {
-                        rock.model.position.set(
+                        rock.model.position.copy(new CANNON.Vec3(
                             rock.cannonBody.position.x,
                             rock.cannonBody.position.y,
-                            rock.cannonBody.position.z
+                            rock.cannonBody.position.z)
                         )
                         rock.model.quaternion.set(
                             rock.cannonBody.quaternion.x,
@@ -569,8 +577,9 @@ export default {
                         )
                     })
 
-
-
+                    this.oil = car.oil
+                    this.energy = car.energy
+                    console.log(this.oil, this.energy)
                     camera.parent = car.chassis
                     camera.lookAt(car.chassis.position)
 
@@ -609,7 +618,7 @@ export default {
     background-color: white;
 }
 
-.lifeBar {
+.oilBar {
     height: 44px;
     width: 60px;
     margin-top: 5px;
