@@ -18,7 +18,8 @@
     "vue": "^3.2.13",
     "vue-router": "^4.2.4",
     "vuetify": "^3.3.16",
-    "vuex": "^4.1.0"
+    "vuex": "^4.1.0",
+    "yuka": "^0.7.8"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

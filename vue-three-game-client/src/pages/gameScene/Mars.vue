@@ -32,6 +32,7 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import starsTexture from '@/assets/img/space2.jpg';
 import testTexture from '@/assets/img/earth.jpg'
 import { GUI } from 'dat.gui'
+import * as YUKA from 'yuka'
 class Car {
     constructor(scene, world, maxOil, maxEnergy, level) {
         this.scene = scene;
@@ -499,7 +500,7 @@ export default {
                     });
                     const model = rockModel.clone();
                     model.scale.set(Math.random() * (0.1 - 0.05) + 0.05, Math.random() * (0.1 - 0.05) + 0.05, Math.random() * (0.1 - 0.05) + 0.05)
-                    model.position.set(Math.random() * (200) - 100, Math.random() * (200) - 100, Math.random() * (200) - 100)
+                    model.position.set(Math.random() * (150) - 75, Math.random() * (150) - 75, Math.random() * (150) - 75)
                     scene.add(model);
 
                     const threeBox = new THREE.Box3().setFromObject(model)
@@ -558,6 +559,49 @@ export default {
                     }
                 })
             });
+
+
+            //!
+            const entityManager = new YUKA.EntityManager();
+
+            function sync(entity, renderComponent) {
+                renderComponent.matrix.copy(entity.worldMatrix);
+            }
+
+            const evader = new YUKA.Vehicle();
+            entityManager.add(evader);
+            evader.maxSpeed = 20;
+
+            const pursuitBehavior = new YUKA.PursuitBehavior(evader, 5);
+
+            const evaderTarget = new YUKA.Vector3();
+            evaderTarget.y = -2
+            const seekBehavior = new YUKA.SeekBehavior(evaderTarget);
+            evader.steering.add(seekBehavior);
+
+            const UFO = new URL('@/assets/model/ufo.glb', import.meta.url)
+
+            gltfLoader.load(UFO.href, function (gltf) {
+                let UFOModel = gltf.scene;
+                const model = UFOModel.clone();
+                model.matrixAutoUpdate = false
+                // console.log(model)
+                scene.add(model)
+                const pursuer = new YUKA.Vehicle();
+                pursuer.setRenderComponent(model, sync);
+                entityManager.add(pursuer);
+                pursuer.position.set(0, 0, 0);
+                pursuer.scale.set(0.01, 0.01, 0.01)
+                pursuer.rotation.set(0, -Math.PI / 2, 0)
+                pursuer.maxSpeed = 20;
+                pursuer.steering.add(pursuitBehavior);
+
+
+            });
+
+            const yukaTime = new YUKA.Time();
+            //!
+
             const timeStep = 1 / 60
             const tick = () => {
                 if (!camera || !car.chassis.position || treasureListLoadedCount != 5 + level * 2) return
@@ -565,6 +609,13 @@ export default {
                 try {
                     stats.begin();
                     controls.update()
+
+                    const delta = yukaTime.update().getDelta();
+                    entityManager.update(delta);
+
+                    evaderTarget.x = car.cannonBody.position.x
+                    evaderTarget.z = car.cannonBody.position.z
+
 
                     world.step(timeStep)
                     treasureList.forEach(treasure => {
@@ -600,7 +651,7 @@ export default {
                     renderer.render(scene, camera)
                     stats.end();
                 } catch (e) {
-                    //console.error(e)
+                    console.error(e)
                 }
             }
             renderer.setAnimationLoop(tick);
