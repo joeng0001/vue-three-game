@@ -8,10 +8,6 @@ import Earth from "@/pages/gameScene/Earth";
 import Mars from "@/pages/gameScene/Mars";
 const routes = [
   {
-    path: "/",
-    component: HelloWorld,
-  },
-  {
     path: "/entry",
     component: Entry,
     children: [
@@ -44,7 +40,7 @@ const routes = [
   },
   {
     path: "/:catchAll(.*)",
-    redirect: "/login",
+    redirect: "/entry/gameMode",
   },
 ];
 const router = createRouter({

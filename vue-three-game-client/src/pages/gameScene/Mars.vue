@@ -3,15 +3,17 @@
         <canvas ref="three"></canvas>
         <div class="marksPanel">
             <div class="bar">
-                <div class="marks"> Marks: &nbsp;{{ marks }}/10 </div>
+                <div class="marks"> Marks: &nbsp;{{ marks }}/{{ 5 + $route.query.level * 2 }} </div>
                 <div style="display:flex;align-items: center;justify-content: space-between;">
                     <span>Oil: </span>
-                    <v-progress-linear :model-value="oil" max="10" bg-color="white" color="success" class="oilBar" />
+                    <v-progress-linear :model-value="oil" :max="10 - this.$route.query.level" bg-color="white"
+                        color="success" class="oilBar" />
 
                 </div>
                 <div style="display:flex;align-items: center;justify-content: space-between;">
                     <span>Energy: </span>
-                    <v-progress-linear :model-value="energy" max="10" bg-color="white" color="primary" class="oilBar" />
+                    <v-progress-linear :model-value="energy" :max="10 - this.$route.query.level" bg-color="white"
+                        color="primary" class="oilBar" />
 
                 </div>
 
@@ -31,7 +33,7 @@ import starsTexture from '@/assets/img/space2.jpg';
 import testTexture from '@/assets/img/earth.jpg'
 import { GUI } from 'dat.gui'
 class Car {
-    constructor(scene, world) {
+    constructor(scene, world, maxOil, maxEnergy, level) {
         this.scene = scene;
         this.world = world;
         this.car = {};
@@ -53,8 +55,11 @@ class Car {
             hindWheel: 0.01
         };
         this.mass = 250;
-        this.oil = 10
-        this.energy = 10
+        this.level = level
+        this.maxOil = maxOil
+        this.maxEnergy = maxEnergy
+        this.oil = maxOil
+        this.energy = maxEnergy
     }
 
     init() {
@@ -225,20 +230,34 @@ class Car {
 
 
                 if (keysPressed.includes("shift")) {
-                    maxForce = 300
-                    this.energy -= 0.05
+                    if (this.energy > 0) {
+                        maxForce = 300
+                        this.energy -= (0.01 + this.level * 0.001)
+                        this.oil -= 0.003
+                    }
+
                 } else {
-                    this.energy += 0.001
+                    if (this.energy < this.maxEnergy) {
+                        this.energy += 0.001
+                    }
                 }
                 if (keysPressed.includes("w") || keysPressed.includes("arrowup")) {
-                    this.oil -= 0.001
+                    if (this.oil < 0) {
+                        brake()
+                        return
+                    }
+                    this.oil -= (0.001 + this.level * 0.0005)
                     this.car.applyEngineForce(maxForce * -1, 0);
                     this.car.applyEngineForce(maxForce * -1, 1);
                     this.car.applyEngineForce(maxForce * -1, 2);
                     this.car.applyEngineForce(maxForce * -1, 3);
                 }
                 else if (keysPressed.includes("s") || keysPressed.includes("arrowdown")) {
-                    this.oil -= 0.001
+                    if (this.oil < 0) {
+                        brake()
+                        return
+                    }
+                    this.oil -= (0.001 + this.level * 0.0005)
                     this.car.applyEngineForce(maxForce * 1, 0);
                     this.car.applyEngineForce(maxForce * 1, 1);
                     this.car.applyEngineForce(maxForce * 1, 2);
@@ -305,8 +324,8 @@ export default {
     data() {
         return {
             marks: 0,
-            oil: 10,
-            energy: 10
+            oil: 10 - this.$route.query.level,
+            energy: 10 - this.$route.query.level
         }
     },
     mounted() {
@@ -314,6 +333,8 @@ export default {
     },
     methods: {
         async initScene() {
+            const level = parseInt(this.$route.query.level) ?? 1
+
             console.log("loading")
             let stats = new Stats();
             stats.showPanel(0);
@@ -326,7 +347,7 @@ export default {
             world.broadphase = new CANNON.SAPBroadphase(world);
 
 
-            const car = new Car(scene, world);
+            const car = new Car(scene, world, this.oil, this.energy, level);
             car.init();
 
             const bodyMaterial = new CANNON.Material();
@@ -378,7 +399,7 @@ export default {
             for (let i = 0; i < sizeX; i++) {
                 matrix.push([]);
                 for (let j = 0; j < sizeY; j++) {
-                    let height = Math.cos(i / sizeX * Math.PI * 5) * Math.cos(j / sizeY * Math.PI * 5) * 3 + 2;
+                    let height = Math.cos(i / sizeX * Math.PI * 5) * Math.cos(j / sizeY * Math.PI * 5) * level * 0.5 + 2;
                     if (i === 0 || i === sizeX - 1 || j === 0 || j === sizeY - 1)
                         height = 5;
                     matrix[i].push(height);
@@ -396,7 +417,6 @@ export default {
 
             let geometry = new THREE.BufferGeometry();
 
-            // Generate vertices and faces based on the height field matrix
             let vertices = [];
             let faces = [];
             const colors = [];
@@ -427,29 +447,25 @@ export default {
                 }
             }
 
-            // Set the vertex and index attributes of the geometry
             geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
             geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
             geometry.setIndex(faces);
             //const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, wireframe: true })
             let material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, vertexColors: true });
-
-
-            //let material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-            // Create mesh using the geometry and material
             let mesh = new THREE.Mesh(geometry, material);
             mesh.position.y = -4
-            // Add the mesh to the scene
             scene.add(mesh);
 
-            //iinit trasure
             const treasure = new URL('@/assets/model/treasure1.glb', import.meta.url)
             const gltfLoader = new GLTFLoader()
             let treasureList = []
             let treasureListLoadedCount = 0
-            for (let i = 0; i < 10; i++) {
-                gltfLoader.load(treasure.href, function (gltf) {
-                    const model = gltf.scene;
+
+            gltfLoader.load(treasure.href, async function (gltf) {
+                const treasureModel = gltf.scene;
+                for (let i = 0; i < 5 + level * 2; i++) {
+
+                    const model = treasureModel.clone()
                     scene.add(model);
                     const boxBody = new CANNON.Body({
                         mass: 1,
@@ -464,8 +480,9 @@ export default {
                         needRemove: false
                     })
                     treasureListLoadedCount += 1
-                });
-            }
+                }
+            });
+
             const camera = new THREE.PerspectiveCamera(60, sizes.width / sizes.height, 0.1, 10000)
             camera.position.set(0, 10, -10)
             scene.add(camera)
@@ -476,13 +493,11 @@ export default {
             let rockModel
             gltfLoader.load(rockUrl.href, async function (gltf) {
                 rockModel = gltf.scene;
-                for (let i = 0; i < 25; i++) {
+                for (let i = 0; i < 20 + level * 3; i++) {
                     await new Promise(resolve => {
                         setTimeout(resolve, 1000);
                     });
                     const model = rockModel.clone();
-                    //console.log("model", model)
-
                     model.scale.set(Math.random() * (0.1 - 0.05) + 0.05, Math.random() * (0.1 - 0.05) + 0.05, Math.random() * (0.1 - 0.05) + 0.05)
                     model.position.set(Math.random() * (200) - 100, Math.random() * (200) - 100, Math.random() * (200) - 100)
                     scene.add(model);
@@ -498,7 +513,6 @@ export default {
                     rockBody.position.y = model.position.y
                     rockBody.position.z = model.position.z
                     world.addBody(rockBody)
-
                     rocksList.push({ model, cannonBody: rockBody })
 
                 }
@@ -546,7 +560,7 @@ export default {
             });
             const timeStep = 1 / 60
             const tick = () => {
-                if (!camera || !car.chassis.position || treasureListLoadedCount != 10) return
+                if (!camera || !car.chassis.position || treasureListLoadedCount != 5 + level * 2) return
 
                 try {
                     stats.begin();
@@ -586,7 +600,7 @@ export default {
                     renderer.render(scene, camera)
                     stats.end();
                 } catch (e) {
-                    console.error(e)
+                    //console.error(e)
                 }
             }
             renderer.setAnimationLoop(tick);
