@@ -42,6 +42,19 @@ export default {
                 minFrontRotation: 0.2,
                 bulletSpeed: 0.3
             },
+            spaceShipQuaternion: {
+                rotationQuaternion: new THREE.Quaternion(),
+                horizontal: {
+                    quaternionAngel: 0,
+                    direction: new THREE.Vector3(0, 0, -1),
+                    axis: new THREE.Vector3(0, 1, 0)
+                },
+                vertical: {
+                    quaternionAngel: 0,
+                    direction: new THREE.Vector3(-1, 0, 0),
+                    axis: new THREE.Vector3(1, 0, 0)
+                }
+            },
             CollisionDistance: null
         }
     },
@@ -162,6 +175,12 @@ export default {
                     console.log("meteor loaded")
                 });
             }
+
+            var angle = Math.PI / 2;
+            var rotationMatrix = new THREE.Matrix4().makeRotationY(angle);
+            scene.matrix.multiply(rotationMatrix);
+            scene.matrixAutoUpdate = false;
+
             let spaceShip = null
 
             gltfLoader.load(spaceShipUrl.href, function (gltf) {
@@ -185,26 +204,21 @@ export default {
                 })
 
                 meteors.forEach(meteor => {
-                    if (meteor.collisionHappened) {
+                    if (meteor.collisionHappened || meteor.gotShoot) {
                         const newPos = [
                             spaceShip.position.x + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50),
                             spaceShip.position.y + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50),
                             spaceShip.position.z + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50)]
                         setObjPos(meteor, newPos[0], newPos[1], newPos[2])
-                        meteor.collisionHappened = false
+                        if (meteor.collisionHappened) {
+                            meteor.collisionHappened = false
+                        } else {
+                            meteor.gotShoot = false
+                        }
                     }
                 })
 
-                meteors.forEach(meteor => {
-                    if (meteor.gotShoot) {
-                        const newPos = [
-                            spaceShip.position.x + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50),
-                            spaceShip.position.y + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50),
-                            spaceShip.position.z + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50)]
-                        setObjPos(meteor, newPos[0], newPos[1], newPos[2])
-                        meteor.gotShoot = false
-                    }
-                })
+
 
                 shootBullets.forEach(bullet => {
                     if (bullet.collisionHappened) {
@@ -298,7 +312,6 @@ export default {
                 if (!spaceShip) return
                 let min_distance = 9999
                 meteors.map(meteor => {
-                    console.log(meteor)
                     const distance = Math.sqrt(
                         Math.pow(meteor.model.position.x - spaceShip.position.x, 2) +
                         Math.pow(meteor.model.position.y - spaceShip.position.y, 2) +
@@ -329,10 +342,13 @@ export default {
             }
 
             const moveSpaceShip = (camera) => {
-                const speed = this.speed
-
                 if (!camera || !spaceShip) return
-
+                const speed = this.speed
+                const originSpaceshipPos = {
+                    x: spaceShip.position.x,
+                    y: spaceShip.position.y,
+                    z: spaceShip.position.z,
+                }
                 if (movementKey['Shift']) {
                     if (speed.factor < 2) {
                         speed.factor += 0.1
@@ -340,37 +356,46 @@ export default {
                 } else {
                     speed.factor = 1
                 }
-                if (movementKey['w']) {
-                    spaceShip.position.z -= speed.value * speed.factor
-                    camera.position.z -= speed.value * speed.factor
-                    if (spaceShip.rotation.x < speed.maxFrontRotation) {
-                        spaceShip.rotation.x += 0.01
+                if (movementKey['w'] || movementKey['s']) {
+                    console.log("detect key")
+                    let direction = null
+                    if (movementKey['w']) {
+                        direction = new THREE.Vector3(0, 0, -1);
+                    } else {
+                        direction = new THREE.Vector3(0, 0, 1);
                     }
-                } else if (movementKey['s']) {
-                    spaceShip.position.z += speed.value * speed.factor
-                    camera.position.z += speed.value * speed.factor
-                    if (spaceShip.rotation.x > speed.minFrontRotation) {
-                        spaceShip.rotation.x -= 0.01
+                    direction.applyQuaternion(this.spaceShipQuaternion.rotationQuaternion);
+                    spaceShip.position.add(direction.multiplyScalar(speed.value * speed.factor));
+                }
+                if (movementKey['a'] || movementKey['d']) {
+                    if (movementKey['a']) {
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.horizontal.axis, this.spaceShipQuaternion.horizontal.quaternionAngel = 0.01));
+                    } else {
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.horizontal.axis, this.spaceShipQuaternion.horizontal.quaternionAngel = -0.01));
                     }
+
+                    this.spaceShipQuaternion.horizontal.direction.applyQuaternion(this.spaceShipQuaternion.rotationQuaternion);
+                    spaceShip.position.add(this.spaceShipQuaternion.horizontal.direction.multiplyScalar(speed.value * speed.factor));
+                    spaceShip.setRotationFromQuaternion(this.spaceShipQuaternion.rotationQuaternion);
+                    //camera.position.add(this.spaceShipQuaternion.horizontal.direction.multiplyScalar(speed.value * speed.factor))
                 }
-                if (movementKey['a']) {
-                    spaceShip.position.x -= speed.value * speed.factor
-                    camera.position.x -= speed.value * speed.factor
-                    if (spaceShip.rotation.z < speed.maxSideRotation)
-                        spaceShip.rotation.z += speed.rotateSpeed
-                } else if (movementKey['d']) {
-                    spaceShip.position.x += speed.value * speed.factor
-                    camera.position.x += speed.value * speed.factor
-                    if (spaceShip.rotation.z > speed.minSideRotation)
-                        spaceShip.rotation.z -= speed.rotateSpeed
+                if (movementKey['Alt'] || movementKey[' ']) {
+                    if (movementKey['Alt']) {
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.vertical.axis, this.spaceShipQuaternion.vertical.quaternionAngel = -0.005));
+                    }
+                    if (movementKey[' ']) {
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.vertical.axis, this.spaceShipQuaternion.vertical.quaternionAngel = 0.005));
+                    }
+                    this.spaceShipQuaternion.vertical.direction.applyQuaternion(this.spaceShipQuaternion.rotationQuaternion);
+                    spaceShip.position.add(this.spaceShipQuaternion.vertical.direction.multiplyScalar(speed.value * speed.factor));
+                    spaceShip.setRotationFromQuaternion(this.spaceShipQuaternion.rotationQuaternion);
+                    //camera.position.add(this.spaceShipQuaternion.vertical.direction.multiplyScalar(speed.value * speed.factor))
                 }
-                if (movementKey['Alt']) {
-                    spaceShip.position.y -= speed.value * speed.factor
-                    camera.position.y -= speed.value * speed.factor
-                } else if (movementKey[' ']) {
-                    spaceShip.position.y += speed.value * speed.factor
-                    camera.position.y += speed.value * speed.factor
-                }
+                camera.position.set(
+                    camera.position.x + spaceShip.position.x - originSpaceshipPos.x,
+                    camera.position.y + spaceShip.position.y - originSpaceshipPos.y,
+                    camera.position.z + spaceShip.position.z - originSpaceshipPos.z
+                )
                 orbit.target.copy(new THREE.Vector3(spaceShip.position.x, spaceShip.position.y, spaceShip.position.z))
                 orbit.update();
             }
@@ -409,9 +434,7 @@ export default {
             setInterval(() => {
                 collisionHandler()
                 detectPositionTooFarHandler()
-
                 detectShoot()
-
                 detectCollisions()
                 detectMeteorPos()
                 detectBulletPos()
