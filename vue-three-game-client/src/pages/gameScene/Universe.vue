@@ -53,7 +53,12 @@ export default {
                     quaternionAngel: 0,
                     direction: new THREE.Vector3(-1, 0, 0),
                     axis: new THREE.Vector3(1, 0, 0)
-                }
+                },
+                side: {
+                    quaternionAngel: 0,
+                    direction: new THREE.Vector3(0, -1,),
+                    axis: new THREE.Vector3(0, 0, 1)
+                },
             },
             CollisionDistance: null
         }
@@ -370,12 +375,14 @@ export default {
                 if (movementKey['a'] || movementKey['d']) {
                     if (movementKey['a']) {
                         this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.horizontal.axis, this.spaceShipQuaternion.horizontal.quaternionAngel = 0.01));
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.side.axis, this.spaceShipQuaternion.side.quaternionAngel = 0.005));
                     } else {
                         this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.horizontal.axis, this.spaceShipQuaternion.horizontal.quaternionAngel = -0.01));
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.side.axis, this.spaceShipQuaternion.side.quaternionAngel = -0.005));
                     }
-
                     this.spaceShipQuaternion.horizontal.direction.applyQuaternion(this.spaceShipQuaternion.rotationQuaternion);
                     spaceShip.position.add(this.spaceShipQuaternion.horizontal.direction.multiplyScalar(speed.value * speed.factor));
+                    spaceShip.position.add(this.spaceShipQuaternion.side.direction.multiplyScalar(speed.value * speed.factor));
                     spaceShip.setRotationFromQuaternion(this.spaceShipQuaternion.rotationQuaternion);
                     //camera.position.add(this.spaceShipQuaternion.horizontal.direction.multiplyScalar(speed.value * speed.factor))
                 }
@@ -411,6 +418,7 @@ export default {
                 detectShootLock = true
                 if (this.control.shoot) {
                     const movementSpeed = this.speed.bulletSpeed
+                    const quaternion = this.spaceShipQuaternion.rotationQuaternion.clone()
                     gltfLoader.load(shootBulletUrl.href, function (gltf) {
                         const model = gltf.scene;
                         scene.add(model);
@@ -418,7 +426,8 @@ export default {
                         model.position.set(spaceShip.position.x, spaceShip.position.y, spaceShip.position.z)
                         shootBullets.push({
                             model, box: new THREE.Box3().setFromObject(model), movementSpeed,
-                            positionTooFar: false, collisionHappened: false,
+                            positionTooFar: false, collisionHappened: false, direction: new THREE.Vector3(0, 0, -1),
+                            quaternion
                         })
                     });
                     this.control.shoot = false
@@ -427,7 +436,9 @@ export default {
             }
             const moveShootBullet = () => {
                 shootBullets.forEach(bullet => {
-                    setObjPos(bullet, bullet.model.position.x, bullet.model.position.y, bullet.model.position.z -= bullet.movementSpeed)
+                    bullet.direction.applyQuaternion(bullet.quaternion);
+                    bullet.model.position.add(bullet.direction.multiplyScalar(bullet.movementSpeed));
+                    //setObjPos(bullet, bullet.model.position.x, bullet.model.position.y, bullet.model.position.z -= bullet.movementSpeed)
                 })
             }
 
