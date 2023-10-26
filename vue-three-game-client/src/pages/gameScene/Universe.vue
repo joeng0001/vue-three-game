@@ -11,8 +11,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import starsTexture from '@/assets/img/space2.jpg';
-
-
+import Stats from 'three/examples/jsm/libs/stats.module'
 
 export default {
     mounted() {
@@ -43,7 +42,7 @@ export default {
                 bulletSpeed: 0.3
             },
             spaceShipQuaternion: {
-                rotationQuaternion: ((new THREE.Quaternion()).setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)),
+                rotationQuaternion: ((new THREE.Quaternion())),//.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)),
                 horizontal: {
                     quaternionAngel: 0,
                     direction: new THREE.Vector3(0, 0, -1),
@@ -102,6 +101,9 @@ export default {
             const axesHelper = new THREE.AxesHelper(100);
             scene.add(axesHelper);
 
+            const stats = new Stats()
+            document.body.appendChild(stats.dom)
+
             const cubeTextureLoader = new THREE.CubeTextureLoader();
             scene.background = cubeTextureLoader.load([
                 starsTexture,
@@ -134,7 +136,6 @@ export default {
                 ringMesh.setRotationFromQuaternion(randomQuaternion);
                 rings.push({ model: ringMesh, box: new THREE.Box3().setFromObject(ringMesh), collisionHappened: false })
             }
-
             for (let i = 0; i < 10; i++) {
                 gltfLoader.load(meteorUrl.href, function (gltf) {
                     const model = gltf.scene;
@@ -150,7 +151,6 @@ export default {
                         movementSpeed: Math.random() * (0.01 - 0.001) + 0.001,
                         movementX: Math.random() < 0.5, movementY: Math.random() < 0.5, movementZ: Math.random() < 0.5
                     })
-                    console.log("meteor loaded")
                 });
                 gltfLoader.load(meteor2Url.href, function (gltf) {
                     const model = gltf.scene;
@@ -166,7 +166,6 @@ export default {
                         movementSpeed: Math.random() * (0.01 - 0.001) + 0.001,
                         movementX: Math.random() < 0.5, movementY: Math.random() < 0.5, movementZ: Math.random() < 0.5
                     })
-                    console.log("meteor loaded")
                 });
                 gltfLoader.load(meteor3Url.href, function (gltf) {
                     const model = gltf.scene;
@@ -182,12 +181,10 @@ export default {
                         movementSpeed: Math.random() * (0.01 - 0.001) + 0.001,
                         movementX: Math.random() < 0.5, movementY: Math.random() < 0.5, movementZ: Math.random() < 0.5
                     })
-                    console.log("meteor loaded")
                 });
             }
 
-            var angle = Math.PI / 2;
-            var rotationMatrix = new THREE.Matrix4().makeRotationY(angle);
+            var rotationMatrix = new THREE.Matrix4().makeRotationY(Math.PI / 2);
             scene.matrix.multiply(rotationMatrix);
             scene.matrixAutoUpdate = false;
 
@@ -195,8 +192,8 @@ export default {
             let spaceShipArrowHelper = null
             gltfLoader.load(spaceShipUrl.href, function (gltf) {
                 const model = gltf.scene;
-                model.scale.set(0.5, 0.5, 0.5)
-                model.rotation.y = Math.PI
+                //model.scale.set(0.5, 0.5, 0.5)
+                //model.rotation.y = Math.PI
 
                 spaceShipArrowHelper = new THREE.ArrowHelper(
                     model.getWorldDirection(new THREE.Vector3()),
@@ -209,19 +206,18 @@ export default {
                 scene.add(model);
                 spaceShip = model
 
-                // spaceShipAnimationMixer = new THREE.AnimationMixer(model);
-                // const clips = gltf.animations;
+                spaceShipAnimationMixer = new THREE.AnimationMixer(model);
+                const clips = gltf.animations;
 
-                // // Play all animations at the same time
-                // clips.forEach(function (clip) {
-                //     const action = spaceShipAnimationMixer.clipAction(clip);
-                //     action.play();
-                // });
+                // Play all animations at the same time
+                clips.forEach(function (clip) {
+                    const action = spaceShipAnimationMixer.clipAction(clip);
+                    action.play();
+                });
             });
             let detectCollisionLock = false, detectPositionTooFarLock = false, detectShootLock = false
 
-
-            const collisionHandler = () => {
+            const collisionHandler = async () => {
                 if (!spaceShip || detectCollisionLock) return
                 detectCollisionLock = true
                 //remove collision
@@ -260,7 +256,7 @@ export default {
                 detectCollisionLock = false
             }
 
-            const detectPositionTooFarHandler = () => {
+            const detectPositionTooFarHandler = async () => {
                 if (!spaceShip || detectPositionTooFarLock) return
                 detectPositionTooFarLock = true
                 meteors.forEach(meteor => {
@@ -285,15 +281,15 @@ export default {
             }
 
 
-            const detectCollisions = () => {
+            const detectCollisions = async () => {
                 if (!spaceShip) return
                 const spaceShipBox = new THREE.Box3().setFromObject(spaceShip)
-                meteors.map(meteor => {
+                meteors.forEach(meteor => {
                     if (spaceShipBox.intersectsBox(meteor.box)) {
                         meteor.collisionHappened = true
                     }
                 })
-                rings.map(ring => {
+                rings.forEach(ring => {
                     if (spaceShipBox.intersectsBox(ring.box)) {
                         ring.collisionHappened = true
                     }
@@ -302,7 +298,6 @@ export default {
                 shootBullets.forEach(bullet => {
                     meteors.forEach(meteor => {
                         if (bullet.box.intersectsBox(meteor.box)) {
-                            console.log("detect bnullet intersert wwith meteor")
                             bullet.collisionHappened = true
                             meteor.gotShoot = true
                         }
@@ -310,7 +305,7 @@ export default {
                 })
             }
 
-            const detectMeteorPos = () => {
+            const detectMeteorPos = async () => {
                 if (!spaceShip) return
                 meteors.forEach(meteor => {
                     const distance = Math.sqrt(
@@ -324,7 +319,7 @@ export default {
                 })
             }
 
-            const detectBulletPos = () => {
+            const detectBulletPos = async () => {
                 if (!spaceShip) return
                 shootBullets.forEach(bullet => {
                     const distance = Math.sqrt(
@@ -338,7 +333,7 @@ export default {
                 })
             }
 
-            const detectCollisionDistance = () => {
+            const detectCollisionDistance = async () => {
                 if (!spaceShip) return
                 let min_distance = 9999
                 meteors.map(meteor => {
@@ -355,23 +350,20 @@ export default {
                 this.CollisionDistance = min_distance
             }
 
-            const moveMeteor = () => {
+            const moveMeteor = async () => {
                 if (!spaceShip) return
                 meteors.forEach(meteor => {
                     if (meteor.rotationX) meteor.model.rotation.x += meteor.rotationSpeed
                     if (meteor.rotationY) meteor.model.rotation.y += meteor.rotationSpeed
                     if (meteor.rotationZ) meteor.model.rotation.z += meteor.rotationSpeed
-                    if (meteor.movementX) { meteor.model.position.x += meteor.movementSpeed }
-                    else { meteor.model.position.x -= meteor.movementSpeed }
-                    if (meteor.movementY) { meteor.model.position.y += meteor.movementSpeed }
-                    else { meteor.model.position.y -= meteor.movementSpeed }
-                    if (meteor.movementZ) { meteor.model.position.z += meteor.movementSpeed }
-                    else { meteor.model.position.z -= meteor.movementSpeed }
+                    meteor.movementX ? meteor.model.position.x += meteor.movementSpeed : meteor.model.position.x -= meteor.movementSpeed
+                    meteor.movementY ? meteor.model.position.y += meteor.movementSpeed : meteor.model.position.y -= meteor.movementSpeed
+                    meteor.movementZ ? meteor.model.position.z += meteor.movementSpeed : meteor.model.position.z -= meteor.movementSpeed
                     setObjPos(meteor, meteor.model.position.x, meteor.model.position.y, meteor.model.position.z)
                 })
             }
 
-            const moveSpaceShip = (camera) => {
+            const moveSpaceShip = async (camera) => {
                 if (!camera || !spaceShip) return
                 const speed = this.speed
                 const originSpaceshipPos = {
@@ -389,9 +381,9 @@ export default {
                 if (movementKey['w'] || movementKey['s']) {
                     let direction = null
                     if (movementKey['w']) {
-                        direction = new THREE.Vector3(0, 0, 1);
-                    } else {
                         direction = new THREE.Vector3(0, 0, -1);
+                    } else {
+                        direction = new THREE.Vector3(0, 0, 1);
                     }
                     direction.applyQuaternion(this.spaceShipQuaternion.rotationQuaternion);
                     spaceShip.position.add(direction.multiplyScalar(speed.value * speed.factor));
@@ -399,10 +391,10 @@ export default {
                 if (movementKey['a'] || movementKey['d']) {
                     if (movementKey['a']) {
                         this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.horizontal.axis, this.spaceShipQuaternion.horizontal.quaternionAngel = 0.01));
-                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.side.axis, this.spaceShipQuaternion.side.quaternionAngel = -0.01));
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.side.axis, this.spaceShipQuaternion.side.quaternionAngel = 0.01));
                     } else {
                         this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.horizontal.axis, this.spaceShipQuaternion.horizontal.quaternionAngel = -0.01));
-                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.side.axis, this.spaceShipQuaternion.side.quaternionAngel = 0.01));
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.side.axis, this.spaceShipQuaternion.side.quaternionAngel = -0.01));
                     }
                     this.spaceShipQuaternion.horizontal.direction.applyQuaternion(this.spaceShipQuaternion.rotationQuaternion);
                     spaceShip.position.add(this.spaceShipQuaternion.horizontal.direction.multiplyScalar(speed.value * speed.factor));
@@ -411,15 +403,14 @@ export default {
                 }
                 if (movementKey['Alt'] || movementKey[' ']) {
                     if (movementKey['Alt']) {
-                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.vertical.axis, this.spaceShipQuaternion.vertical.quaternionAngel = 0.005));
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.vertical.axis, this.spaceShipQuaternion.vertical.quaternionAngel = -0.005));
                     }
                     if (movementKey[' ']) {
-                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.vertical.axis, this.spaceShipQuaternion.vertical.quaternionAngel = -0.005));
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.vertical.axis, this.spaceShipQuaternion.vertical.quaternionAngel = 0.005));
                     }
                     this.spaceShipQuaternion.vertical.direction.applyQuaternion(this.spaceShipQuaternion.rotationQuaternion);
                     spaceShip.position.add(this.spaceShipQuaternion.vertical.direction.multiplyScalar(speed.value * speed.factor));
                     spaceShip.setRotationFromQuaternion(this.spaceShipQuaternion.rotationQuaternion);
-                    //camera.position.add(this.spaceShipQuaternion.vertical.direction.multiplyScalar(speed.value * speed.factor))
                 }
                 camera.position.set(
                     camera.position.x + spaceShip.position.x - originSpaceshipPos.x,
@@ -445,7 +436,14 @@ export default {
                     //quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
                     gltfLoader.load(shootBulletUrl.href, function (gltf) {
                         const model = gltf.scene;
-                        scene.add(model);
+
+                        model.traverse(function (child) {
+                            if (child instanceof THREE.Mesh) {
+                                const newMaterial = new THREE.MeshBasicMaterial({ color: 0xFFBF00 });
+                                child.material = newMaterial;
+                            }
+                        }); scene.add(model);
+                        console.log("shooting", model)
                         model.scale.set(0.01, 0.01, 0.01)
                         model.setRotationFromQuaternion(quaternion);
                         model.position.set(spaceShip.position.x, spaceShip.position.y, spaceShip.position.z)
@@ -459,9 +457,9 @@ export default {
                 }
                 detectShootLock = false
             }
-            const moveShootBullet = () => {
+            const moveShootBullet = async () => {
                 shootBullets.forEach(bullet => {
-                    bullet.direction = new THREE.Vector3(0, 0, 1)
+                    bullet.direction = new THREE.Vector3(0, 0, -1)
                     bullet.direction.applyQuaternion(bullet.quaternion);
                     bullet.direction.multiplyScalar(bullet.movementSpeed)
                     bullet.model.position.add(bullet.direction);
@@ -469,20 +467,20 @@ export default {
                         .sub(bullet.box.getCenter(new THREE.Vector3()));
                     bullet.box.min.add(translation);
                     bullet.box.max.add(translation);
-                    //setObjPos(bullet, bullet.model.position.x, bullet.model.position.y, bullet.model.position.z -= bullet.movementSpeed)
                 })
             }
-            const moveSpaceShipArrowHelper = () => {
+            const moveSpaceShipArrowHelper = async () => {
                 if (!spaceShip || !spaceShipArrowHelper) return
                 spaceShipArrowHelper.position.copy(spaceShip.position);
-                spaceShipArrowHelper.setDirection(new THREE.Vector3(0, 0, 1).applyQuaternion(this.spaceShipQuaternion.rotationQuaternion.clone()));
+                spaceShipArrowHelper.setDirection(new THREE.Vector3(0, 0, -1).applyQuaternion(this.spaceShipQuaternion.rotationQuaternion.clone()));
             }
 
-            // const playSpaceShipAnimation = () => {
-            //     if (!spaceShipAnimationMixer) return
-            //     const delta = clock.getDelta();
-            //     spaceShipAnimationMixer.update(delta);
-            // }
+            const playSpaceShipAnimation = () => {
+                if (!spaceShipAnimationMixer) return
+                const delta = clock.getDelta();
+                spaceShipAnimationMixer.update(delta);
+            }
+            console.log("setting interval")
             setInterval(() => {
                 collisionHandler()
                 detectPositionTooFarHandler()
@@ -491,13 +489,15 @@ export default {
                 detectMeteorPos()
                 detectBulletPos()
                 detectCollisionDistance()
-            }, 100)
+            }, 200)
             function animate() {
+                stats.begin();
                 moveSpaceShip(camera)
                 moveMeteor()
                 moveShootBullet()
                 moveSpaceShipArrowHelper()
-                //playSpaceShipAnimation()
+                playSpaceShipAnimation()
+                stats.end();
                 renderer.render(scene, camera);
             }
 
