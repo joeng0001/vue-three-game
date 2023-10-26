@@ -33,7 +33,7 @@ export default {
                 'shoot': false
             },
             speed: {
-                value: 0.05,
+                value: 0.15,
                 factor: 1,
                 rotateSpeed: 0.01,
                 maxSideRotation: 0.2,
@@ -43,7 +43,7 @@ export default {
                 bulletSpeed: 0.3
             },
             spaceShipQuaternion: {
-                rotationQuaternion: new THREE.Quaternion(),
+                rotationQuaternion: ((new THREE.Quaternion()).setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)),
                 horizontal: {
                     quaternionAngel: 0,
                     direction: new THREE.Vector3(0, 0, -1),
@@ -56,7 +56,7 @@ export default {
                 },
                 side: {
                     quaternionAngel: 0,
-                    direction: new THREE.Vector3(0, -1,),
+                    direction: new THREE.Vector3(0, -1, 0),
                     axis: new THREE.Vector3(0, 0, 1)
                 },
             },
@@ -127,6 +127,13 @@ export default {
                 const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
                 scene.add(ringMesh);
                 ringMesh.position.set(Math.random() * (200) + -100, Math.random() * (200) + -100, -30 - i * 10)
+                const randomQuaternion = new THREE.Quaternion();
+                randomQuaternion.setFromEuler(new THREE.Euler(
+                    Math.random() * 2 * Math.PI,
+                    Math.random() * 2 * Math.PI,
+                    Math.random() * 2 * Math.PI
+                ));
+                ringMesh.setRotationFromQuaternion(randomQuaternion);
                 rings.push({ model: ringMesh, box: new THREE.Box3().setFromObject(ringMesh), collisionHappened: false })
             }
 
@@ -187,9 +194,21 @@ export default {
             scene.matrixAutoUpdate = false;
 
             let spaceShip = null
-
+            let spaceShipArrowHelper = null
             gltfLoader.load(spaceShipUrl.href, function (gltf) {
                 const model = gltf.scene;
+                model.scale.set(0.5, 0.5, 0.5)
+                model.rotation.y = Math.PI
+
+                spaceShipArrowHelper = new THREE.ArrowHelper(
+                    model.getWorldDirection(new THREE.Vector3()),
+                    model.position,
+                    100,
+                    0xff0000
+                );
+
+                scene.add(spaceShipArrowHelper);
+
                 scene.add(model);
                 spaceShip = model
             });
@@ -362,12 +381,11 @@ export default {
                     speed.factor = 1
                 }
                 if (movementKey['w'] || movementKey['s']) {
-                    console.log("detect key")
                     let direction = null
                     if (movementKey['w']) {
-                        direction = new THREE.Vector3(0, 0, -1);
-                    } else {
                         direction = new THREE.Vector3(0, 0, 1);
+                    } else {
+                        direction = new THREE.Vector3(0, 0, -1);
                     }
                     direction.applyQuaternion(this.spaceShipQuaternion.rotationQuaternion);
                     spaceShip.position.add(direction.multiplyScalar(speed.value * speed.factor));
@@ -375,23 +393,22 @@ export default {
                 if (movementKey['a'] || movementKey['d']) {
                     if (movementKey['a']) {
                         this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.horizontal.axis, this.spaceShipQuaternion.horizontal.quaternionAngel = 0.01));
-                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.side.axis, this.spaceShipQuaternion.side.quaternionAngel = 0.005));
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.side.axis, this.spaceShipQuaternion.side.quaternionAngel = -0.01));
                     } else {
                         this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.horizontal.axis, this.spaceShipQuaternion.horizontal.quaternionAngel = -0.01));
-                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.side.axis, this.spaceShipQuaternion.side.quaternionAngel = -0.005));
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.side.axis, this.spaceShipQuaternion.side.quaternionAngel = 0.01));
                     }
                     this.spaceShipQuaternion.horizontal.direction.applyQuaternion(this.spaceShipQuaternion.rotationQuaternion);
                     spaceShip.position.add(this.spaceShipQuaternion.horizontal.direction.multiplyScalar(speed.value * speed.factor));
                     spaceShip.position.add(this.spaceShipQuaternion.side.direction.multiplyScalar(speed.value * speed.factor));
                     spaceShip.setRotationFromQuaternion(this.spaceShipQuaternion.rotationQuaternion);
-                    //camera.position.add(this.spaceShipQuaternion.horizontal.direction.multiplyScalar(speed.value * speed.factor))
                 }
                 if (movementKey['Alt'] || movementKey[' ']) {
                     if (movementKey['Alt']) {
-                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.vertical.axis, this.spaceShipQuaternion.vertical.quaternionAngel = -0.005));
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.vertical.axis, this.spaceShipQuaternion.vertical.quaternionAngel = 0.005));
                     }
                     if (movementKey[' ']) {
-                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.vertical.axis, this.spaceShipQuaternion.vertical.quaternionAngel = 0.005));
+                        this.spaceShipQuaternion.rotationQuaternion.multiply(new THREE.Quaternion().setFromAxisAngle(this.spaceShipQuaternion.vertical.axis, this.spaceShipQuaternion.vertical.quaternionAngel = -0.005));
                     }
                     this.spaceShipQuaternion.vertical.direction.applyQuaternion(this.spaceShipQuaternion.rotationQuaternion);
                     spaceShip.position.add(this.spaceShipQuaternion.vertical.direction.multiplyScalar(speed.value * speed.factor));
@@ -413,20 +430,22 @@ export default {
                 obj.box.min.add(translation);
                 obj.box.max.add(translation);
             }
-            const detectShoot = () => {
+            const detectShoot = async () => {
                 if (detectShootLock) return
                 detectShootLock = true
                 if (this.control.shoot) {
                     const movementSpeed = this.speed.bulletSpeed
                     const quaternion = this.spaceShipQuaternion.rotationQuaternion.clone()
+                    //quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
                     gltfLoader.load(shootBulletUrl.href, function (gltf) {
                         const model = gltf.scene;
                         scene.add(model);
                         model.scale.set(0.01, 0.01, 0.01)
+                        model.setRotationFromQuaternion(quaternion);
                         model.position.set(spaceShip.position.x, spaceShip.position.y, spaceShip.position.z)
                         shootBullets.push({
                             model, box: new THREE.Box3().setFromObject(model), movementSpeed,
-                            positionTooFar: false, collisionHappened: false, direction: new THREE.Vector3(0, 0, -1),
+                            positionTooFar: false, collisionHappened: false, direction: new THREE.Vector3(0, 0, 1),
                             quaternion
                         })
                     });
@@ -436,10 +455,22 @@ export default {
             }
             const moveShootBullet = () => {
                 shootBullets.forEach(bullet => {
+                    bullet.direction = new THREE.Vector3(0, 0, 1)
                     bullet.direction.applyQuaternion(bullet.quaternion);
-                    bullet.model.position.add(bullet.direction.multiplyScalar(bullet.movementSpeed));
+                    bullet.direction.multiplyScalar(bullet.movementSpeed)
+                    bullet.model.position.add(bullet.direction);
+                    const translation = new THREE.Vector3(bullet.model.position.x, bullet.model.position.y, bullet.model.position.z)
+                        .sub(bullet.box.getCenter(new THREE.Vector3()));
+                    bullet.box.min.add(translation);
+                    bullet.box.max.add(translation);
                     //setObjPos(bullet, bullet.model.position.x, bullet.model.position.y, bullet.model.position.z -= bullet.movementSpeed)
                 })
+            }
+            const moveSpaceShipArrowHelper = () => {
+                if (!spaceShip || !spaceShipArrowHelper) return
+                spaceShipArrowHelper.position.copy(spaceShip.position);
+                spaceShipArrowHelper.setDirection(new THREE.Vector3(0, 0, 1).applyQuaternion(this.spaceShipQuaternion.rotationQuaternion.clone()));
+                //spaceShipArrowHelper.setDirection(spaceShip.getWorldDirection(new THREE.Vector3()));
             }
 
             setInterval(() => {
@@ -455,6 +486,7 @@ export default {
                 moveSpaceShip(camera)
                 moveMeteor()
                 moveShootBullet()
+                moveSpaceShipArrowHelper()
                 renderer.render(scene, camera);
             }
 
