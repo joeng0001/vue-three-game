@@ -439,14 +439,14 @@ export default {
 
                         model.traverse(function (child) {
                             if (child instanceof THREE.Mesh) {
-                                const newMaterial = new THREE.MeshBasicMaterial({ color: 0xFFBF00 });
-                                child.material = newMaterial;
+                                child.material = new THREE.MeshBasicMaterial({ color: 0xFFBF00 });
                             }
-                        }); scene.add(model);
+                        });
                         console.log("shooting", model)
                         model.scale.set(0.01, 0.01, 0.01)
                         model.setRotationFromQuaternion(quaternion);
                         model.position.set(spaceShip.position.x, spaceShip.position.y, spaceShip.position.z)
+                        scene.add(model);
                         shootBullets.push({
                             model, box: new THREE.Box3().setFromObject(model), movementSpeed,
                             positionTooFar: false, collisionHappened: false, direction: new THREE.Vector3(0, 0, 1),

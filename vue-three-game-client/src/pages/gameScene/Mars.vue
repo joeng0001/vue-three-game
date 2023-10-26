@@ -1,9 +1,9 @@
 <template>
     <div>
         <canvas ref="three"></canvas>
-        <div class="marksPanel">
+        <div class="scorePanel">
             <div class="bar">
-                <div class="marks"> Marks: &nbsp;{{ marks }}/{{ 5 + $route.query.level * 2 }} </div>
+                <div class="score"> Score: &nbsp;{{ score }}/{{ 5 + $route.query.level * 2 }} </div>
                 <div style="display:flex;align-items: center;justify-content: space-between;">
                     <span>Oil: </span>
                     <v-progress-linear :model-value="oil" :max="10 - this.$route.query.level" bg-color="white"
@@ -34,8 +34,9 @@ import testTexture from '@/assets/img/earth.jpg'
 import { GUI } from 'dat.gui'
 import * as YUKA from 'yuka'
 class Car {
-    constructor(scene, world, maxOil, maxEnergy, level) {
+    constructor(scene, world, maxOil, maxEnergy, level, camera) {
         this.scene = scene;
+        this.camera = camera
         this.world = world;
         this.car = {};
         this.chassis = {};
@@ -86,6 +87,7 @@ class Car {
         gltfLoader.load(chassisUrl.href, gltf => {
             this.chassis = gltf.scene;
             this.scene.add(this.chassis);
+            this.camera.parent = this.chassis
         })
 
         this.wheels = [];
@@ -188,7 +190,6 @@ class Car {
             })
             const quaternion = new CANNON.Quaternion().setFromEuler(-Math.PI / 2, 0, 0)
             wheelBody.addShape(cylinderShape, new CANNON.Vec3(), quaternion)
-            // this.wheels[index].wheelBody = wheelBody;
         }.bind(this));
     }
 
@@ -324,9 +325,9 @@ class Car {
 export default {
     data() {
         return {
-            marks: 0,
-            oil: 10 - this.$route.query.level,
-            energy: 10 - this.$route.query.level
+            score: 0,
+            oil: 10 - this.$route.query.level ?? 1,
+            energy: 10 - this.$route.query.level ?? 1
         }
     },
     mounted() {
@@ -348,7 +349,11 @@ export default {
             world.broadphase = new CANNON.SAPBroadphase(world);
 
 
-            const car = new Car(scene, world, this.oil, this.energy, level);
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000)
+            camera.position.set(0, 10, -10)
+            scene.add(camera)
+
+            const car = new Car(scene, world, this.oil, this.energy, level, camera);
             car.init();
 
             const bodyMaterial = new CANNON.Material();
@@ -375,19 +380,11 @@ export default {
             ])
             scene.background = cubeEnvironmentMapTexture
 
-            const sizes = {
-                width: window.innerWidth,
-                height: window.innerHeight
-            }
-
             window.addEventListener('resize', () => {
-                sizes.width = window.innerWidth
-                sizes.height = window.innerHeight
-
-                camera.aspect = sizes.width / sizes.height
+                camera.aspect = window.innerWidth / window.innerHeight
                 camera.updateProjectionMatrix()
 
-                renderer.setSize(sizes.width, sizes.height)
+                renderer.setSize(window.innerWidth, window.innerHeight)
                 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
             })
 
@@ -484,9 +481,6 @@ export default {
                 }
             });
 
-            const camera = new THREE.PerspectiveCamera(60, sizes.width / sizes.height, 0.1, 10000)
-            camera.position.set(0, 10, -10)
-            scene.add(camera)
 
 
             let rocksList = []
@@ -542,7 +536,7 @@ export default {
             const renderer = new THREE.WebGLRenderer({
                 canvas: canvas
             })
-            renderer.setSize(sizes.width, sizes.height)
+            renderer.setSize(window.innerWidth, window.innerHeight)
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 
@@ -555,7 +549,7 @@ export default {
                 treasureList.forEach(treasure => {
                     if ((bodyB === treasure.cannonBody && bodyA === car.cannonBody) || (bodyA === treasure.cannonBody && bodyB === car.cannonBody)) {
                         treasure.needRemove = true
-                        this.marks += 1
+                        this.score += 1
                     }
                 })
             });
@@ -563,11 +557,6 @@ export default {
 
             //!
             const entityManager = new YUKA.EntityManager();
-
-            function sync(entity, renderComponent) {
-                renderComponent.matrix.copy(entity.worldMatrix);
-            }
-
             const evader = new YUKA.Vehicle();
             entityManager.add(evader);
             evader.maxSpeed = 20;
@@ -583,28 +572,49 @@ export default {
 
             gltfLoader.load(UFO.href, function (gltf) {
                 let UFOModel = gltf.scene;
-                const model = UFOModel.clone();
-                model.matrixAutoUpdate = false
+                UFOModel.matrixAutoUpdate = false
                 // console.log(model)
-                scene.add(model)
+                scene.add(UFOModel)
                 const pursuer = new YUKA.Vehicle();
-                pursuer.setRenderComponent(model, sync);
+                pursuer.setRenderComponent(UFOModel, (entity, renderComponent) => { renderComponent.matrix.copy(entity.worldMatrix) });
                 entityManager.add(pursuer);
                 pursuer.position.set(0, 0, 0);
                 pursuer.scale.set(0.01, 0.01, 0.01)
                 pursuer.rotation.set(0, -Math.PI / 2, 0)
                 pursuer.maxSpeed = 20;
                 pursuer.steering.add(pursuitBehavior);
-
-
             });
 
+            const updateTreasureList = async () => {
+                treasureList.forEach(treasure => {
+                    if (treasure.needRemove) {
+                        scene.remove(treasure.model)
+                        world.removeBody(treasure.cannonBody)
+                        treasureList = treasureList.filter(item => item !== treasure)
+                    } else {
+                        treasure.model.position.copy(new CANNON.Vec3(treasure.cannonBody.position.x, treasure.cannonBody.position.y - 0.8, treasure.cannonBody.position.z))
+                    }
+                })
+            }
+            const updateRockList = async () => {
+                rocksList.forEach(rock => {
+                    rock.model.position.copy(new CANNON.Vec3(
+                        rock.cannonBody.position.x,
+                        rock.cannonBody.position.y,
+                        rock.cannonBody.position.z)
+                    )
+                    rock.model.quaternion.set(
+                        rock.cannonBody.quaternion.x,
+                        rock.cannonBody.quaternion.y,
+                        rock.cannonBody.quaternion.z,
+                        rock.cannonBody.quaternion.w
+                    )
+                })
+            }
             const yukaTime = new YUKA.Time();
-            //!
-
             const timeStep = 1 / 60
             const tick = () => {
-                if (!camera || !car.chassis.position || treasureListLoadedCount != 5 + level * 2) return
+                if (!camera || !car?.chassis || treasureListLoadedCount != 5 + level * 2) return
 
                 try {
                     stats.begin();
@@ -618,34 +628,13 @@ export default {
 
 
                     world.step(timeStep)
-                    treasureList.forEach(treasure => {
-                        if (treasure.needRemove) {
-                            scene.remove(treasure.model)
-                            world.removeBody(treasure.cannonBody)
-                            treasureList = treasureList.filter(item => item !== treasure)
-                        } else {
-                            treasure.model.position.copy(new CANNON.Vec3(treasure.cannonBody.position.x, treasure.cannonBody.position.y - 0.8, treasure.cannonBody.position.z))
-                        }
-                    })
-
-                    rocksList.forEach(rock => {
-                        rock.model.position.copy(new CANNON.Vec3(
-                            rock.cannonBody.position.x,
-                            rock.cannonBody.position.y,
-                            rock.cannonBody.position.z)
-                        )
-                        rock.model.quaternion.set(
-                            rock.cannonBody.quaternion.x,
-                            rock.cannonBody.quaternion.y,
-                            rock.cannonBody.quaternion.z,
-                            rock.cannonBody.quaternion.w
-                        )
-                    })
+                    updateTreasureList()
+                    updateRockList()
 
                     this.oil = car.oil
                     this.energy = car.energy
                     console.log(this.oil, this.energy)
-                    camera.parent = car.chassis
+                    //camera.parent = car.chassis
                     camera.lookAt(car.chassis.position)
 
                     renderer.render(scene, camera)
@@ -661,7 +650,7 @@ export default {
 </script>
 
 <style scoped>
-.marksPanel {
+.scorePanel {
     z-index: 99;
     width: 100%;
     display: flex;
@@ -679,7 +668,7 @@ export default {
     margin-left: 10px;
 }
 
-.marks {
+.score {
     background-color: white;
 }
 
