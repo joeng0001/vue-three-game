@@ -73,13 +73,11 @@ export default {
             const shootBulletUrl = new URL('@/assets/model/lazer_bullet.glb', import.meta.url)
 
             const gltfLoader = new GLTFLoader();
-
-
             const scene = new THREE.Scene();
-
             const canvas = this.$refs.three
-
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            let spaceShipAnimationMixer = null
+            const clock = new THREE.Clock();
 
             renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -208,9 +206,17 @@ export default {
                 );
 
                 scene.add(spaceShipArrowHelper);
-
                 scene.add(model);
                 spaceShip = model
+
+                // spaceShipAnimationMixer = new THREE.AnimationMixer(model);
+                // const clips = gltf.animations;
+
+                // // Play all animations at the same time
+                // clips.forEach(function (clip) {
+                //     const action = spaceShipAnimationMixer.clipAction(clip);
+                //     action.play();
+                // });
             });
             let detectCollisionLock = false, detectPositionTooFarLock = false, detectShootLock = false
 
@@ -470,9 +476,13 @@ export default {
                 if (!spaceShip || !spaceShipArrowHelper) return
                 spaceShipArrowHelper.position.copy(spaceShip.position);
                 spaceShipArrowHelper.setDirection(new THREE.Vector3(0, 0, 1).applyQuaternion(this.spaceShipQuaternion.rotationQuaternion.clone()));
-                //spaceShipArrowHelper.setDirection(spaceShip.getWorldDirection(new THREE.Vector3()));
             }
 
+            // const playSpaceShipAnimation = () => {
+            //     if (!spaceShipAnimationMixer) return
+            //     const delta = clock.getDelta();
+            //     spaceShipAnimationMixer.update(delta);
+            // }
             setInterval(() => {
                 collisionHandler()
                 detectPositionTooFarHandler()
@@ -487,6 +497,7 @@ export default {
                 moveMeteor()
                 moveShootBullet()
                 moveSpaceShipArrowHelper()
+                //playSpaceShipAnimation()
                 renderer.render(scene, camera);
             }
 
