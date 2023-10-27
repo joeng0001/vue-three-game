@@ -4,24 +4,40 @@
         <div class="scorePanel">
             <div class="bar">
                 <div class="score"> Score: &nbsp;{{ score }}/{{ maxScore }} </div>
-                <div style="display:flex;align-items: center;justify-content: space-between;color:white;">
+                <div class="panelContent">
                     <span>Life: </span>
                     <v-progress-linear :model-value="life" :max="maxLife" bg-color="white" color="success"
                         class="lifeBar" />
                 </div>
-                <div style="display:flex;align-items: center;justify-content: space-between;color:white;">
+                <div class="panelContent">
                     <span>Energy: </span>
                     <v-progress-linear :model-value="energy" :max="maxEnergy" bg-color="white" color="primary"
                         class="lifeBar" />
                 </div>
-                <div style="display:flex;align-items: center;justify-content: space-between;color:white;">
+                <div class="panelContent">
                     <span>Ammo: </span>
                     <v-progress-linear :model-value="ammo" :max="maxAmmo" bg-color="white" color="secondary"
                         class="lifeBar" />
 
                 </div>
+                <div class="panelContent">
+                    <v-btn @click="endGame.dialog = true">end game</v-btn>
+                </div>
             </div>
         </div>
+        <v-dialog width="500" v-model="endGame.dialog">
+            <v-card title="Dialog">
+                <v-card-text>
+                    {{ endGame.message }}
+                </v-card-text>
+
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn text="Try Again" v-show="endGame.win"></v-btn>
+                    <v-btn text="Back" @click="endGame.dialog = false"></v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </div>
 </template>
 
@@ -82,7 +98,7 @@ export default {
             CollisionDistance: null,
             score: 0,
             ammo: 50 + this.getLevel() * 5,
-            life: 50 + this.getLevel() * 5,
+            life: 100 + this.getLevel() * 5,
             energy: 60 - this.getLevel() * 5,
             maxLife: 50 + this.getLevel() * 5,
             maxAmmo: 50 + this.getLevel() * 5,
@@ -90,7 +106,13 @@ export default {
             maxScore: 20 + this.getLevel() * 2,
             maxMeteorNumber: 10 + this.getLevel() * 15,
             energyConsume: 0.01 * this.getLevel(),
-            energyResume: 0.003
+            energyResume: 0.005,
+            lifeConsume: 0.001 * this.getLevel(),
+            endGame: {
+                endGameDialog: false,
+                endGameWin: false,
+                endGameMessage: ""
+            }
         }
     },
     methods: {
@@ -122,10 +144,6 @@ export default {
             camera.position.set(0, 20, 30);
             orbit.update();
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight.position.set(1, 1, 1);
-            scene.add(directionalLight);
-
             const ambientLight = new THREE.AmbientLight(0xFFFFFF, 1);
             scene.add(ambientLight);
 
@@ -146,9 +164,9 @@ export default {
             ]);
             const getRandomPosition = (maxDis) => {
                 return [
-                    Math.random() < 0.5 ? Math.random() * maxDis : -1 * Math.random() * maxDis,
-                    Math.random() < 0.5 ? Math.random() * maxDis : -1 * Math.random() * maxDis,
-                    Math.random() < 0.5 ? Math.random() * maxDis : -1 * Math.random() * maxDis
+                    Math.random() * maxDis * (Math.random() < 0.5 ? 1 : -1),
+                    Math.random() * maxDis * (Math.random() < 0.5 ? 1 : -1),
+                    Math.random() * maxDis * (Math.random() < 0.5 ? 1 : -1),
                 ]
             }
 
@@ -263,17 +281,18 @@ export default {
                         scene.remove(ring.model)
                         scene.remove(ring.box)
                         this.score += 1
+                        this.life < this.maxLife - 10 ? this.life += 10 : this.life = this.maxLife
+                        this.ammo < this.maxAmmo - 10 ? this.ammo += 10 : this.ammo = this.maxAmmo
                         rings = rings.filter(obj => obj != ring)
                     }
                 })
 
                 meteors.forEach(meteor => {
                     if (meteor.collisionHappened || meteor.gotShoot) {
-
                         setObjPos(meteor, ...getRandomPosition(200))
                         if (meteor.collisionHappened) {
                             meteor.collisionHappened = false
-                            this.life -= 1
+                            this.life -= 10
                         } else {
                             meteor.gotShoot = false
                         }
@@ -514,11 +533,28 @@ export default {
                 spaceShipArrowHelper.position.copy(spaceShip.position);
                 spaceShipArrowHelper.setDirection(new THREE.Vector3(0, 0, -1).applyQuaternion(this.spaceShipQuaternion.rotationQuaternion.clone()));
             }
-
             const playSpaceShipAnimation = () => {
                 if (!spaceShipAnimationMixer) return
                 const delta = clock.getDelta();
                 spaceShipAnimationMixer.update(delta);
+            }
+            const lifeComsume = () => {
+                this.life -= this.lifeConsume
+            }
+
+            const detectWinOrLose = () => {
+                if (this.life <= 0) {
+                    this.endGame.win = false
+                    this.endGame.message = "you lose!"
+                    this.endGame.dialog = true
+                    console.error("you lose")
+                }
+                if (this.score >= this.maxScore) {
+                    this.endGame.win = true
+                    this.endGame.message = "you win!"
+                    this.endGame.dialog = true
+                    console.error("you win")
+                }
             }
             console.log("setting interval")
             setInterval(() => {
@@ -529,6 +565,7 @@ export default {
                 detectMeteorPos()
                 detectBulletPos()
                 detectCollisionDistance()
+                detectWinOrLose()
                 console.log(this.life, this.energy, this.score, this.ammo)
             }, 200)
             function animate() {
@@ -538,6 +575,7 @@ export default {
                 moveShootBullet()
                 moveSpaceShipArrowHelper()
                 playSpaceShipAnimation()
+                lifeComsume()
                 stats.end();
                 renderer.render(scene, camera);
             }
@@ -605,5 +643,12 @@ export default {
     height: 44px;
     width: 60px;
     margin-top: 5px;
+}
+
+.panelContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
 }
 </style>
