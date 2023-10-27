@@ -6,14 +6,14 @@
                 <div class="score"> Score: &nbsp;{{ score }}/{{ 5 + $route.query.level * 2 }} </div>
                 <div style="display:flex;align-items: center;justify-content: space-between;">
                     <span>Oil: </span>
-                    <v-progress-linear :model-value="oil" :max="10 - this.$route.query.level" bg-color="white"
-                        color="success" class="oilBar" />
+                    <v-progress-linear :model-value="oil" :max="10 - $route.query.level" bg-color="white" color="success"
+                        class="oilBar" />
 
                 </div>
                 <div style="display:flex;align-items: center;justify-content: space-between;">
                     <span>Energy: </span>
-                    <v-progress-linear :model-value="energy" :max="10 - this.$route.query.level" bg-color="white"
-                        color="primary" class="oilBar" />
+                    <v-progress-linear :model-value="energy" :max="10 - $route.query.level" bg-color="white" color="primary"
+                        class="oilBar" />
 
                 </div>
 

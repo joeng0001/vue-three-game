@@ -1,7 +1,27 @@
 <template>
     <div>
-        <div style="background-color: white;">{{ CollisionDistance }}</div>
         <canvas ref="three"></canvas>
+        <div class="scorePanel">
+            <div class="bar">
+                <div class="score"> Score: &nbsp;{{ score }}/{{ maxScore }} </div>
+                <div style="display:flex;align-items: center;justify-content: space-between;color:white;">
+                    <span>Life: </span>
+                    <v-progress-linear :model-value="life" :max="maxLife" bg-color="white" color="success"
+                        class="lifeBar" />
+                </div>
+                <div style="display:flex;align-items: center;justify-content: space-between;color:white;">
+                    <span>Energy: </span>
+                    <v-progress-linear :model-value="energy" :max="maxEnergy" bg-color="white" color="primary"
+                        class="lifeBar" />
+                </div>
+                <div style="display:flex;align-items: center;justify-content: space-between;color:white;">
+                    <span>Ammo: </span>
+                    <v-progress-linear :model-value="ammo" :max="maxAmmo" bg-color="white" color="secondary"
+                        class="lifeBar" />
+
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -59,7 +79,18 @@ export default {
                     axis: new THREE.Vector3(0, 0, 1)
                 },
             },
-            CollisionDistance: null
+            CollisionDistance: null,
+            score: 0,
+            ammo: 50 + this.getLevel() * 5,
+            life: 50 + this.getLevel() * 5,
+            energy: 60 - this.getLevel() * 5,
+            maxLife: 50 + this.getLevel() * 5,
+            maxAmmo: 50 + this.getLevel() * 5,
+            maxEnergy: 60 - this.getLevel() * 5,
+            maxScore: 20 + this.getLevel() * 2,
+            maxMeteorNumber: 10 + this.getLevel() * 15,
+            energyConsume: 0.01 * this.getLevel(),
+            energyResume: 0.003
         }
     },
     methods: {
@@ -113,7 +144,13 @@ export default {
                 starsTexture,
                 starsTexture
             ]);
-
+            const getRandomPosition = (maxDis) => {
+                return [
+                    Math.random() < 0.5 ? Math.random() * maxDis : -1 * Math.random() * maxDis,
+                    Math.random() < 0.5 ? Math.random() * maxDis : -1 * Math.random() * maxDis,
+                    Math.random() < 0.5 ? Math.random() * maxDis : -1 * Math.random() * maxDis
+                ]
+            }
 
             const ringGeometry = new THREE.TorusGeometry(
                 2,
@@ -123,10 +160,10 @@ export default {
 
             let rings = [], meteors = [], shootBullets = []
             const ringMaterial = new THREE.MeshBasicMaterial({ color: 0x90EE90, side: THREE.DoubleSide, });
-            for (let i = 0; i < 30; i++) {
+            for (let i = 0; i < this.maxScore; i++) {
                 const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
                 scene.add(ringMesh);
-                ringMesh.position.set(Math.random() * (200) + -100, Math.random() * (200) + -100, -30 - i * 10)
+                ringMesh.position.set(...getRandomPosition(200))
                 const randomQuaternion = new THREE.Quaternion();
                 randomQuaternion.setFromEuler(new THREE.Euler(
                     Math.random() * 2 * Math.PI,
@@ -136,11 +173,11 @@ export default {
                 ringMesh.setRotationFromQuaternion(randomQuaternion);
                 rings.push({ model: ringMesh, box: new THREE.Box3().setFromObject(ringMesh), collisionHappened: false })
             }
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < this.maxMeteorNumber; i++) {
                 gltfLoader.load(meteorUrl.href, function (gltf) {
                     const model = gltf.scene;
                     scene.add(model);
-                    model.position.set((Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50))
+                    model.position.set(...getRandomPosition(200))
                     const sceleFactor = Math.random() * (2 - 0.5) + 0.5;
                     model.scale.set(sceleFactor, sceleFactor, sceleFactor)
                     meteors.push({
@@ -155,7 +192,7 @@ export default {
                 gltfLoader.load(meteor2Url.href, function (gltf) {
                     const model = gltf.scene;
                     scene.add(model);
-                    model.position.set((Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50))
+                    model.position.set(...getRandomPosition(200))
                     const sceleFactor = Math.random() * (2 - 0.5) + 0.5;
                     model.scale.set(sceleFactor, sceleFactor, sceleFactor)
                     meteors.push({
@@ -170,7 +207,7 @@ export default {
                 gltfLoader.load(meteor3Url.href, function (gltf) {
                     const model = gltf.scene;
                     scene.add(model);
-                    model.position.set((Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50), (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50))
+                    model.position.set(...getRandomPosition(200))
                     const sceleFactor = Math.random() * (0.05 - 0.01)
                     model.scale.set(sceleFactor, sceleFactor, sceleFactor)
                     meteors.push({
@@ -225,19 +262,18 @@ export default {
                     if (ring.collisionHappened) {
                         scene.remove(ring.model)
                         scene.remove(ring.box)
+                        this.score += 1
                         rings = rings.filter(obj => obj != ring)
                     }
                 })
 
                 meteors.forEach(meteor => {
                     if (meteor.collisionHappened || meteor.gotShoot) {
-                        const newPos = [
-                            spaceShip.position.x + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50),
-                            spaceShip.position.y + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50),
-                            spaceShip.position.z + (Math.random() < 0.5 ? Math.random() * 50 : -1 * Math.random() * 50)]
-                        setObjPos(meteor, newPos[0], newPos[1], newPos[2])
+
+                        setObjPos(meteor, ...getRandomPosition(200))
                         if (meteor.collisionHappened) {
                             meteor.collisionHappened = false
+                            this.life -= 1
                         } else {
                             meteor.gotShoot = false
                         }
@@ -308,12 +344,9 @@ export default {
             const detectMeteorPos = async () => {
                 if (!spaceShip) return
                 meteors.forEach(meteor => {
-                    const distance = Math.sqrt(
-                        Math.pow(meteor.model.position.x - spaceShip.position.x, 2) +
-                        Math.pow(meteor.model.position.y - spaceShip.position.y, 2) +
-                        Math.pow(meteor.model.position.z - spaceShip.position.z, 2)
-                    );
-                    if (distance > 80 || meteor.model.position.z > spaceShip.position.z + 20) {
+                    if (meteor.model.position.z > 300 || meteor.model.position.z < -300 ||
+                        meteor.model.position.y > 300 || meteor.model.position.y < -300 ||
+                        meteor.model.position.x > 300 || meteor.model.position.x < -300) {
                         meteor.positionTooFar = true
                     }
                 })
@@ -327,7 +360,7 @@ export default {
                         Math.pow(bullet.model.position.y - spaceShip.position.y, 2) +
                         Math.pow(bullet.model.position.z - spaceShip.position.z, 2)
                     );
-                    if (distance > 100) {
+                    if (distance > 200) {
                         bullet.positionTooFar = true
                     }
                 })
@@ -375,8 +408,15 @@ export default {
                     if (speed.factor < 2) {
                         speed.factor += 0.1
                     }
+                    if (this.energy > 0) {
+                        this.energy -= this.energyConsume
+                    }
                 } else {
                     speed.factor = 1
+                    if (this.energy < this.maxEnergy) {
+                        this.energy += this.energyResume
+                    }
+
                 }
                 if (movementKey['w'] || movementKey['s']) {
                     let direction = null
@@ -428,9 +468,10 @@ export default {
                 obj.box.max.add(translation);
             }
             const detectShoot = async () => {
-                if (detectShootLock) return
+                if (detectShootLock || this.ammo <= 0) return
                 detectShootLock = true
                 if (this.control.shoot) {
+                    this.ammo -= 1
                     const movementSpeed = this.speed.bulletSpeed
                     const quaternion = this.spaceShipQuaternion.rotationQuaternion.clone()
                     //quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
@@ -442,7 +483,6 @@ export default {
                                 child.material = new THREE.MeshBasicMaterial({ color: 0xFFBF00 });
                             }
                         });
-                        console.log("shooting", model)
                         model.scale.set(0.01, 0.01, 0.01)
                         model.setRotationFromQuaternion(quaternion);
                         model.position.set(spaceShip.position.x, spaceShip.position.y, spaceShip.position.z)
@@ -489,6 +529,7 @@ export default {
                 detectMeteorPos()
                 detectBulletPos()
                 detectCollisionDistance()
+                console.log(this.life, this.energy, this.score, this.ammo)
             }, 200)
             function animate() {
                 stats.begin();
@@ -527,6 +568,9 @@ export default {
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
+        },
+        getLevel() {
+            return this.$route.query.level > 8 || this.$route.query.level < 1 ? 1 : parseInt(this.$route.query.level)
         }
     }
 
@@ -534,4 +578,32 @@ export default {
 </script>
 
 
-<style scoped></style>
+<style scoped>
+.scorePanel {
+    z-index: 99;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.bar {
+    position: absolute;
+    top: 5%;
+
+    font-family: fantasy;
+    font-size: 16px;
+    font-weight: 300;
+    text-align: center;
+    margin-left: 10px;
+}
+
+.score {
+    background-color: white;
+}
+
+.lifeBar {
+    height: 44px;
+    width: 60px;
+    margin-top: 5px;
+}
+</style>
