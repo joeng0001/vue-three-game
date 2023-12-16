@@ -11,23 +11,158 @@
 
             <!--after pick the scene,move the camera the the game scenario-->
             <v-card-actions class="d-flex justify-space-between mt-4">
-                <v-btn class="btn" style="color:Aquamarine;"
-                    @click="() => $router.push('/Entry/gameLevel?scene=Universe')">Universe</v-btn>
-                <v-btn class="btn" style="color:GreenYellow;"
-                    @click="() => $router.push('/Entry/gameLevel?scene=Earth')">Earth</v-btn>
-                <v-btn class="btn" style="color:orange;"
-                    @click="() => $router.push('/Entry/gameLevel?scene=Mars')">Mars</v-btn>
+                <v-btn class="btn" style="color:Aquamarine;" @click="() => $router.push('/Entry/gameLevel?scene=Universe')">
+                    <v-tooltip activator="parent" location="bottom">Universe
+                    </v-tooltip>
+                    <canvas ref="universe"></canvas></v-btn>
+
+                <v-btn class="btn" style="color:GreenYellow;" @click="() => $router.push('/Entry/gameLevel?scene=Earth')">
+                    <v-tooltip activator="parent" location="bottom">Earth
+                    </v-tooltip>
+                    <canvas ref="earth"></canvas>
+                </v-btn>
+
+
+                <v-btn class="btn" style="color:orange;" @click="() => $router.push('/Entry/gameLevel?scene=Mars')">
+                    <v-tooltip activator="parent" location="bottom">Mars
+                    </v-tooltip>
+                    <canvas ref="mars"></canvas>
+                </v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
-
+import * as THREE from "three"
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import earthTexture from '@/assets/img/earth.jpg'
+import marsTexture from '@/assets/img/mars.jpg'
 export default {
+
+    mounted() {
+        this.initUniverseBtn()
+        this.initEarthBtn()
+        this.initMarsBtn()
+    },
+
+
     data() {
         return {
             dialog: true
+        }
+    },
+    methods: {
+        initUniverseBtn() {
+            const gltfLoader = new GLTFLoader()
+            const scene = new THREE.Scene();
+            const canvas = this.$refs.universe
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            const blackholeUrl = new URL('@/assets/model/blackhole.glb', import.meta.url)
+            renderer.setSize(100, 100);
+            const camera = new THREE.PerspectiveCamera(
+                45,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            const orbit = new OrbitControls(camera, renderer.domElement);
+            const clock = new THREE.Clock();
+            camera.position.set(0, 15, 0);
+            orbit.update();
+            const ambientLight = new THREE.AmbientLight(0x333333);
+            scene.add(ambientLight);
+
+            let blackholeAnimation = null
+            gltfLoader.load(blackholeUrl.href, function (gltf) {
+                const model = gltf.scene;
+                scene.add(model);
+                model.position.set(0, 0, 0)
+
+                blackholeAnimation = new THREE.AnimationMixer(model);
+                blackholeAnimation.timeScale = 2.0
+                const clips = gltf.animations;
+
+                // Play all animations at the same time
+                clips.forEach(function (clip) {
+                    const action = blackholeAnimation.clipAction(clip);
+                    action.play();
+                });
+
+            });
+
+            const playBlackholeAnimation = () => {
+                if (!blackholeAnimation) return
+                const delta = clock.getDelta();
+                blackholeAnimation.update(delta);
+            }
+            function animate() {
+                playSpaceShipAnimation()
+                renderer.render(scene, camera);
+            }
+
+            renderer.setAnimationLoop(animate);
+        },
+        initEarthBtn() {
+            const scene = new THREE.Scene();
+            const canvas = this.$refs.earth
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setSize(100, 100);
+            const camera = new THREE.PerspectiveCamera(
+                45,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            const orbit = new OrbitControls(camera, renderer.domElement);
+            camera.position.set(25, 25, 25);
+            orbit.update();
+            const ambientLight = new THREE.AmbientLight(0x333333);
+            scene.add(ambientLight);
+            const textureLoader = new THREE.TextureLoader();
+            const earthGeo = new THREE.SphereGeometry(16, 30, 30);
+            const earthMat = new THREE.MeshBasicMaterial({
+                map: textureLoader.load(earthTexture)
+            });
+            const earth = new THREE.Mesh(earthGeo, earthMat);
+            scene.add(earth);
+            function animate() {
+                earth.rotateY(0.004);
+                renderer.render(scene, camera);
+            }
+
+            renderer.setAnimationLoop(animate);
+        },
+        initMarsBtn() {
+            const scene = new THREE.Scene();
+            const canvas = this.$refs.mars
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setSize(100, 100);
+            const camera = new THREE.PerspectiveCamera(
+                45,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            const orbit = new OrbitControls(camera, renderer.domElement);
+            camera.position.set(25, 25, 25);
+            orbit.update();
+            const ambientLight = new THREE.AmbientLight(0x333333);
+            scene.add(ambientLight);
+            const textureLoader = new THREE.TextureLoader();
+            const marsGeo = new THREE.SphereGeometry(16, 30, 30);
+            const marsMat = new THREE.MeshBasicMaterial({
+                map: textureLoader.load(marsTexture)
+            });
+            const mars = new THREE.Mesh(marsGeo, marsMat);
+            scene.add(mars);
+            function animate() {
+                mars.rotateY(0.008);
+                renderer.render(scene, camera);
+            }
+
+            renderer.setAnimationLoop(animate);
         }
     }
 }
@@ -39,6 +174,11 @@ export default {
     background-color: rgba(224, 223, 223, 0.5);
     font-weight: 700;
     font-size: 30px;
+}
+
+.v-btn.v-btn--density-default {
+    height: 100px;
+    width: 100px
 }
 
 .SceneTitle {

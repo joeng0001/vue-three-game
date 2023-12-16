@@ -37,8 +37,8 @@ export default {
         camera.position.set(-1.8, 1.6, 5);
         camera.lookAt(0, 0, 0);
 
-        const axesHelper = new THREE.AxesHelper(100);
-        scene.add(axesHelper);
+        // const axesHelper = new THREE.AxesHelper(100);
+        // scene.add(axesHelper);
 
         const ambient = new THREE.AmbientLight(0xFFFFFF, 0.1);
         scene.add(ambient);

@@ -64,7 +64,6 @@ export default {
             renderer.shadowMap.type = THREE.PCFSoftShadowMap
             document.body.appendChild(renderer.domElement)
 
-            //!!
             const mapUrl = new URL('@/assets/img/earth.jpg', import.meta.url)
             const textureLoader = new THREE.TextureLoader();
             const texture = textureLoader.load(mapUrl.href);

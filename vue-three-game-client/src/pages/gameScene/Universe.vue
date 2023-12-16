@@ -239,6 +239,39 @@ export default {
                 });
             }
 
+
+
+            //load blackhole
+            const blackholeUrl = new URL('@/assets/model/blackhole.glb', import.meta.url)
+            let blackholeAnimations = []
+            let blackholes = []
+            gltfLoader.load(blackholeUrl.href, function (gltf) {
+                const model = gltf.scene;
+
+                for (let i = 0; i < 10; i++) {
+                    const modelClone = model.clone()
+                    scene.add(modelClone);
+                    blackholes.push(modelClone)
+                    modelClone.position.set(...getRandomPosition(200))
+                    //modelClone.position.set(-50, -50, -50)
+                    modelClone.rotation.set(Math.random() * 10, Math.random() * 10, Math.random() * 10)
+                    const animation = new THREE.AnimationMixer(modelClone);
+                    animation.timeScale = 2.0
+                    blackholeAnimations.push(animation)
+                    const clips = gltf.animations;
+                    clips.forEach(function (clip) {
+                        const action = animation.clipAction(clip);
+                        action.play();
+                    });
+                }
+
+
+
+
+            });
+
+
+
             var rotationMatrix = new THREE.Matrix4().makeRotationY(Math.PI / 2);
             scene.matrix.multiply(rotationMatrix);
             scene.matrixAutoUpdate = false;
@@ -471,6 +504,26 @@ export default {
                     spaceShip.position.add(this.spaceShipQuaternion.vertical.direction.multiplyScalar(speed.value * speed.factor));
                     spaceShip.setRotationFromQuaternion(this.spaceShipQuaternion.rotationQuaternion);
                 }
+
+                blackholes.forEach((blackhole, i) => {
+                    const pointA = new THREE.Vector3(originSpaceshipPos.x, originSpaceshipPos.y, originSpaceshipPos.z);
+                    const pointB = new THREE.Vector3(blackhole.position.x, blackhole.position.y, blackhole.position.z);
+                    const direction = new THREE.Vector3().subVectors(pointB, pointA);
+                    direction.normalize();
+                    let distance = pointA.distanceTo(pointB);
+                    if (distance < 10) {
+                        distance = 10
+                    }
+                    if (distance < 200) {
+                        spaceShip.position.add(direction.multiplyScalar(1.15 / distance));
+                    }
+
+                })
+
+
+
+
+
                 camera.position.set(
                     camera.position.x + spaceShip.position.x - originSpaceshipPos.x,
                     camera.position.y + spaceShip.position.y - originSpaceshipPos.y,
@@ -533,10 +586,15 @@ export default {
                 spaceShipArrowHelper.position.copy(spaceShip.position);
                 spaceShipArrowHelper.setDirection(new THREE.Vector3(0, 0, -1).applyQuaternion(this.spaceShipQuaternion.rotationQuaternion.clone()));
             }
-            const playSpaceShipAnimation = () => {
+            const playSpaceShipAnimation = (delta) => {
                 if (!spaceShipAnimationMixer) return
-                const delta = clock.getDelta();
                 spaceShipAnimationMixer.update(delta);
+            }
+            const playBlackholeAnimation = (delta) => {
+                if (!blackholeAnimations) return
+                blackholeAnimations.forEach(animation => {
+                    animation.update(delta);
+                })
             }
             const lifeComsume = () => {
                 this.life -= this.lifeConsume
@@ -566,7 +624,7 @@ export default {
                 detectBulletPos()
                 detectCollisionDistance()
                 detectWinOrLose()
-                console.log(this.life, this.energy, this.score, this.ammo)
+                //console.log(this.life, this.energy, this.score, this.ammo)
             }, 200)
             function animate() {
                 stats.begin();
@@ -574,7 +632,13 @@ export default {
                 moveMeteor()
                 moveShootBullet()
                 moveSpaceShipArrowHelper()
-                playSpaceShipAnimation()
+
+                //animation
+                const delta = clock.getDelta();
+                playSpaceShipAnimation(delta)
+                playBlackholeAnimation(delta)
+
+
                 lifeComsume()
                 stats.end();
                 renderer.render(scene, camera);
