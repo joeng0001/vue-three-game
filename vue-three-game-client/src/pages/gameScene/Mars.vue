@@ -88,6 +88,7 @@ class Car {
             this.chassis = gltf.scene;
             this.scene.add(this.chassis);
             this.camera.parent = this.chassis
+            this.setLight()
         })
 
         this.wheels = [];
@@ -117,6 +118,47 @@ class Car {
             indexForwardAxis: 2
         });
         this.car.addToWorld(this.world);
+    }
+
+    setLight() {
+        // init flash light
+        const flashlight = new THREE.SpotLight(0xffffff, 200, 50, 0.2, 0);
+        flashlight.position.set(-0.5, 1, 2)
+        flashlight.castShadow = true
+
+        this.chassis.add(flashlight)
+
+
+        const flashlight2 = new THREE.SpotLight(0xffffff, 200, 50, 0.2, 0);
+        flashlight2.position.set(0.5, 1, 2)
+        flashlight2.castShadow = true
+
+        this.chassis.add(flashlight2)
+
+
+        const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+        const material = new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            transparent: true,
+            opacity: 0,
+            side: THREE.FrontSide,
+        });
+        const object = new THREE.Mesh(geometry, material);
+        object.position.set(-0.6, 0.9, 3)
+        const object2 = new THREE.Mesh(geometry, material);
+        object2.position.set(0.6, 0.9, 3)
+        flashlight.target = object
+        flashlight2.target = object2
+        this.chassis.add(object)
+        this.chassis.add(object2)
+
+        //init point light
+        const ptLight = new THREE.PointLight(0xffffff, 1, 50);
+        ptLight.position.set(0, 2, 0);
+        ptLight.castShadow = true
+        this.scene.add(ptLight);
+        this.chassis.add(ptLight)
+
     }
 
     setWheels() {
@@ -368,9 +410,6 @@ export default {
             )
             world.addContactMaterial(bodyGroundContactMaterial)
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
-            scene.add(ambientLight)
-
             const axesHelper = new THREE.AxesHelper(100);
             scene.add(axesHelper);
 
@@ -387,8 +426,6 @@ export default {
                 renderer.setSize(window.innerWidth, window.innerHeight)
                 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
             })
-
-
 
             let matrix = [];
             let sizeX = 256,
@@ -445,12 +482,14 @@ export default {
                 }
             }
 
+
             geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
             geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
             geometry.setIndex(faces);
-            //const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, wireframe: true })
-            let material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, vertexColors: true });
+            geometry.computeVertexNormals()
+            let material = new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, vertexColors: true });
             let mesh = new THREE.Mesh(geometry, material);
+            mesh.receiveShadow = true
             mesh.position.y = -4
             scene.add(mesh);
 
@@ -462,9 +501,12 @@ export default {
             gltfLoader.load(treasure.href, async function (gltf) {
                 const treasureModel = gltf.scene;
                 for (let i = 0; i < 5 + level * 2; i++) {
-
                     const model = treasureModel.clone()
                     scene.add(model);
+                    model.traverse(function (node) {
+                        if (node.isMesh)
+                            node.castShadow = true
+                    })
                     const boxBody = new CANNON.Body({
                         mass: 1,
                         shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)),
@@ -481,21 +523,20 @@ export default {
                 }
             });
 
-
-
             let rocksList = []
             const rockUrl = new URL('@/assets/model/rock.glb', import.meta.url)
             let rockModel
             gltfLoader.load(rockUrl.href, async function (gltf) {
                 rockModel = gltf.scene;
                 for (let i = 0; i < 20 + level * 3; i++) {
-                    await new Promise(resolve => {
-                        setTimeout(resolve, 1000);
-                    });
                     const model = rockModel.clone();
                     model.scale.set(Math.random() * (0.1 - 0.05) + 0.05, Math.random() * (0.1 - 0.05) + 0.05, Math.random() * (0.1 - 0.05) + 0.05)
                     model.position.set(Math.random() * (150) - 75, Math.random() * (150) - 75, Math.random() * (150) - 75)
                     scene.add(model);
+                    model.traverse(function (node) {
+                        if (node.isMesh)
+                            node.castShadow = true
+                    })
 
                     const threeBox = new THREE.Box3().setFromObject(model)
                     var threeBoxSize = new THREE.Vector3();
@@ -504,9 +545,7 @@ export default {
                     const rockShape = new CANNON.Box(boxSize)
                     const rockBody = new CANNON.Body({ mass: 100 })
                     rockBody.addShape(rockShape)
-                    rockBody.position.x = model.position.x
-                    rockBody.position.y = model.position.y
-                    rockBody.position.z = model.position.z
+                    rockBody.position.copy(model.position)
                     world.addBody(rockBody)
                     rocksList.push({ model, cannonBody: rockBody })
 
@@ -538,8 +577,7 @@ export default {
             })
             renderer.setSize(window.innerWidth, window.innerHeight)
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-
-
+            renderer.shadowMap.enabled = true
             world.addEventListener('beginContact', (e) => {
 
                 const bodyA = e.bodyA; // First colliding body
@@ -554,8 +592,6 @@ export default {
                 })
             });
 
-
-            //!
             const entityManager = new YUKA.EntityManager();
             const evader = new YUKA.Vehicle();
             entityManager.add(evader);
@@ -573,7 +609,6 @@ export default {
             gltfLoader.load(UFO.href, function (gltf) {
                 let UFOModel = gltf.scene;
                 UFOModel.matrixAutoUpdate = false
-                // console.log(model)
                 scene.add(UFOModel)
                 const pursuer = new YUKA.Vehicle();
                 pursuer.setRenderComponent(UFOModel, (entity, renderComponent) => { renderComponent.matrix.copy(entity.worldMatrix) });
@@ -598,17 +633,8 @@ export default {
             }
             const updateRockList = async () => {
                 rocksList.forEach(rock => {
-                    rock.model.position.copy(new CANNON.Vec3(
-                        rock.cannonBody.position.x,
-                        rock.cannonBody.position.y,
-                        rock.cannonBody.position.z)
-                    )
-                    rock.model.quaternion.set(
-                        rock.cannonBody.quaternion.x,
-                        rock.cannonBody.quaternion.y,
-                        rock.cannonBody.quaternion.z,
-                        rock.cannonBody.quaternion.w
-                    )
+                    rock.model.position.copy(rock.cannonBody.position)
+                    rock.model.quaternion.copy(rock.cannonBody.quaternion)
                 })
             }
             const yukaTime = new YUKA.Time();
@@ -626,14 +652,14 @@ export default {
                     evaderTarget.x = car.cannonBody.position.x
                     evaderTarget.z = car.cannonBody.position.z
 
-
                     world.step(timeStep)
                     updateTreasureList()
                     updateRockList()
 
                     this.oil = car.oil
                     this.energy = car.energy
-                    console.log(this.oil, this.energy)
+                    //console.log(this.oil, this.energy)
+
                     //camera.parent = car.chassis
                     camera.lookAt(car.chassis.position)
 
