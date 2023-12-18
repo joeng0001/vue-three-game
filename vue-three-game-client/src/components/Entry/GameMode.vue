@@ -46,8 +46,6 @@ export default {
         this.initEarthBtn()
         this.initMarsBtn()
     },
-
-
     data() {
         return {
             dialog: true
@@ -98,7 +96,7 @@ export default {
                 blackholeAnimation.update(delta);
             }
             function animate() {
-                playSpaceShipAnimation()
+                playBlackholeAnimation()
                 renderer.render(scene, camera);
             }
 
@@ -181,9 +179,12 @@ export default {
     width: 100px
 }
 
+.btn[data-v-55552302] {
+    background: none;
+}
+
 .SceneTitle {
     margin-bottom: 20px;
-
     position: relative;
     display: inline-block;
     padding: 10px 20px;

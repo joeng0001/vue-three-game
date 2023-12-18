@@ -144,7 +144,17 @@ export default {
             camera.position.set(0, 20, 30);
             orbit.update();
 
+            const flashlight = new THREE.SpotLight(0xffffff, 1);
+            flashlight.position.set(0, 0, -0.1)
+            flashlight.angle = 0.2
+            flashlight.intensity = 5000
+            flashlight.distance = 250
+            scene.add(flashlight);
+
+            // const spotlightHelper = new THREE.SpotLightHelper(flashlight);
+            // scene.add(spotlightHelper);
             const ambientLight = new THREE.AmbientLight(0xFFFFFF, 1);
+            ambientLight.intensity = 0.05
             scene.add(ambientLight);
 
             const axesHelper = new THREE.AxesHelper(100);
@@ -272,17 +282,32 @@ export default {
 
 
 
-            var rotationMatrix = new THREE.Matrix4().makeRotationY(Math.PI / 2);
-            scene.matrix.multiply(rotationMatrix);
-            scene.matrixAutoUpdate = false;
+            // var rotationMatrix = new THREE.Matrix4().makeRotationY(Math.PI / 2);
+            // scene.matrix.multiply(rotationMatrix);
+            // scene.matrixAutoUpdate = false;
 
             let spaceShip = null
             let spaceShipArrowHelper = null
             gltfLoader.load(spaceShipUrl.href, function (gltf) {
                 const model = gltf.scene;
-                //model.scale.set(0.5, 0.5, 0.5)
-                //model.rotation.y = Math.PI
 
+                const geometry = new THREE.BoxGeometry(1, 1, 1);
+
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0x000000,
+                    transparent: true,
+                    opacity: 0,
+                    depthWrite: false,
+                    depthTest: false,
+                    side: THREE.FrontSide,
+                });
+                const object = new THREE.Mesh(geometry, material);
+                object.position.set(0, 0, -0.2)
+                flashlight.target = object
+                scene.add(object);
+
+                model.add(object)
+                model.add(flashlight)
                 spaceShipArrowHelper = new THREE.ArrowHelper(
                     model.getWorldDirection(new THREE.Vector3()),
                     model.position,
@@ -517,12 +542,7 @@ export default {
                     if (distance < 200) {
                         spaceShip.position.add(direction.multiplyScalar(1.15 / distance));
                     }
-
                 })
-
-
-
-
 
                 camera.position.set(
                     camera.position.x + spaceShip.position.x - originSpaceshipPos.x,
@@ -614,8 +634,10 @@ export default {
                     console.error("you win")
                 }
             }
-            console.log("setting interval")
-            setInterval(() => {
+            function animate() {
+                stats.begin();
+
+                //detection
                 collisionHandler()
                 detectPositionTooFarHandler()
                 detectShoot()
@@ -624,10 +646,7 @@ export default {
                 detectBulletPos()
                 detectCollisionDistance()
                 detectWinOrLose()
-                //console.log(this.life, this.energy, this.score, this.ammo)
-            }, 200)
-            function animate() {
-                stats.begin();
+                //movement
                 moveSpaceShip(camera)
                 moveMeteor()
                 moveShootBullet()
@@ -638,16 +657,15 @@ export default {
                 playSpaceShipAnimation(delta)
                 playBlackholeAnimation(delta)
 
-
+                //game state
+                //spotlightHelper.update();
                 lifeComsume()
                 stats.end();
                 renderer.render(scene, camera);
             }
-
-            renderer.setAnimationLoop(animate);
-
             this.addSpaceShipMovementListener(movementKey)
             this.addCanvasResizeListener(camera, renderer)
+            renderer.setAnimationLoop(animate);
         },
         addSpaceShipMovementListener(movementKey) {
             window.addEventListener('keydown', (e) => {
