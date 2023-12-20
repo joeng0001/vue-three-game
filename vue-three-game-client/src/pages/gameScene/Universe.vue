@@ -35,6 +35,7 @@
                     <v-spacer></v-spacer>
                     <v-btn text="Try Again" v-show="endGame.win"></v-btn>
                     <v-btn text="Back" @click="endGame.dialog = false"></v-btn>
+                    <v-btn v-if="getLevel() < 8" text="next level" @click="nextLevel"></v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -98,7 +99,7 @@ export default {
             CollisionDistance: null,
             score: 0,
             ammo: 50 + this.getLevel() * 5,
-            life: 100 + this.getLevel() * 5,
+            life: 50 + this.getLevel() * 5,
             energy: 60 - this.getLevel() * 5,
             maxLife: 50 + this.getLevel() * 5,
             maxAmmo: 50 + this.getLevel() * 5,
@@ -108,6 +109,10 @@ export default {
             energyConsume: 0.01 * this.getLevel(),
             energyResume: 0.005,
             lifeConsume: 0.001 * this.getLevel(),
+            blackHole: {
+                inBlackhole: false,
+                lifeConsume: 0.002 * this.getLevel()
+            },
             endGame: {
                 endGameDialog: false,
                 endGameWin: false,
@@ -154,7 +159,7 @@ export default {
             // const spotlightHelper = new THREE.SpotLightHelper(flashlight);
             // scene.add(spotlightHelper);
             const ambientLight = new THREE.AmbientLight(0xFFFFFF, 1);
-            ambientLight.intensity = 0.05
+            ambientLight.intensity = 0.2
             scene.add(ambientLight);
 
             const axesHelper = new THREE.AxesHelper(100);
@@ -537,6 +542,7 @@ export default {
                     direction.normalize();
                     let distance = pointA.distanceTo(pointB);
                     if (distance < 10) {
+                        this.blackHole.inBlackhole = true
                         distance = 10
                     }
                     if (distance < 200) {
@@ -618,24 +624,32 @@ export default {
             }
             const lifeComsume = () => {
                 this.life -= this.lifeConsume
+                if (this.blackHole.inBlackhole) {
+                    this.life -= this.blackHole.lifeConsume
+                }
+                //console.log(this.life)
             }
 
             const detectWinOrLose = () => {
                 if (this.life <= 0) {
-                    this.endGame.win = false
-                    this.endGame.message = "you lose!"
-                    this.endGame.dialog = true
-                    console.error("you lose")
+                    this.endGame = {
+                        win: false,
+                        message: "you lose!",
+                        dialog: true
+                    }
                 }
                 if (this.score >= this.maxScore) {
-                    this.endGame.win = true
-                    this.endGame.message = "you win!"
-                    this.endGame.dialog = true
-                    console.error("you win")
+                    this.endGame = {
+                        win: true,
+                        message: "you win!",
+                        dialog: true
+                    }
                 }
             }
             function animate() {
                 stats.begin();
+
+
 
                 //detection
                 collisionHandler()
@@ -691,6 +705,9 @@ export default {
         },
         getLevel() {
             return this.$route.query.level > 8 || this.$route.query.level < 1 ? 1 : parseInt(this.$route.query.level)
+        },
+        nextLevel() {
+            this.$router.push({ path: '/Entry/gameLevel', query: { scene: 'Universe' } })
         }
     }
 
