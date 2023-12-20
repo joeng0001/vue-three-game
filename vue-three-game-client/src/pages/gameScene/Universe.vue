@@ -34,7 +34,7 @@
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn text="Try Again" v-show="endGame.win"></v-btn>
-                    <v-btn text="Back" @click="endGame.dialog = false"></v-btn>
+                    <v-btn text="back Home" @click="backHome"></v-btn>
                     <v-btn v-if="getLevel() < 8" text="next level" @click="nextLevel"></v-btn>
                 </v-card-actions>
             </v-card>
@@ -649,8 +649,6 @@ export default {
             function animate() {
                 stats.begin();
 
-
-
                 //detection
                 collisionHandler()
                 detectPositionTooFarHandler()
@@ -706,8 +704,12 @@ export default {
         getLevel() {
             return this.$route.query.level > 8 || this.$route.query.level < 1 ? 1 : parseInt(this.$route.query.level)
         },
-        nextLevel() {
-            this.$router.push({ path: '/Entry/gameLevel', query: { scene: 'Universe' } })
+        async nextLevel() {
+            await this.$router.push({ query: { level: this.getLevel() + 1 } });
+            this.$router.go(0);
+        },
+        backHome() {
+            this.$router.push({ path: '/Entry/gameMode' })
         }
     }
 
