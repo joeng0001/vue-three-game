@@ -1,5 +1,8 @@
 <template>
-    <div>
+    <Loading v-show="!loadDone" />
+
+
+    <div v-show="loadDone">
         <canvas ref="three"></canvas>
         <div class="scorePanel">
             <div class="bar">
@@ -49,13 +52,25 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import starsTexture from '@/assets/img/space2.jpg';
 import Stats from 'three/examples/jsm/libs/stats.module'
-
+import Loading from "@/components/Loading.vue"
 export default {
+    components: { Loading },
     mounted() {
         this.initScene()
     },
+    computed: {
+        loadDone() {
+            return !(this.loading.ringMesh || this.loading.blackhole || this.loading.spaceShip || this.loading.meteor.includes(true))
+        }
+    },
     data() {
         return {
+            loading: {
+                ringMesh: true,
+                blackhole: true,
+                spaceShip: true,
+                meteor: [true, true, true]
+            },
             movementKey: {
                 'w': false,
                 'a': false,
@@ -121,7 +136,7 @@ export default {
         }
     },
     methods: {
-        initScene() {
+        async initScene() {
             const movementKey = this.movementKey
             const spaceShipUrl = new URL('@/assets/model/spaceShip.glb', import.meta.url)
             const meteorUrl = new URL('@/assets/model/meteor.glb', import.meta.url)
@@ -206,9 +221,12 @@ export default {
                 ringMesh.setRotationFromQuaternion(randomQuaternion);
                 rings.push({ model: ringMesh, box: new THREE.Box3().setFromObject(ringMesh), collisionHappened: false })
             }
-            for (let i = 0; i < this.maxMeteorNumber; i++) {
-                gltfLoader.load(meteorUrl.href, function (gltf) {
-                    const model = gltf.scene;
+            this.loading.ringMesh = false
+
+            gltfLoader.load(meteorUrl.href, (gltf) => {
+                const originModel = gltf.scene;
+                for (let i = 0; i < this.maxMeteorNumber; i++) {
+                    const model = originModel.clone()
                     scene.add(model);
                     model.position.set(...getRandomPosition(200))
                     const sceleFactor = Math.random() * (2 - 0.5) + 0.5;
@@ -221,9 +239,13 @@ export default {
                         movementSpeed: Math.random() * (0.01 - 0.001) + 0.001,
                         movementX: Math.random() < 0.5, movementY: Math.random() < 0.5, movementZ: Math.random() < 0.5
                     })
-                });
-                gltfLoader.load(meteor2Url.href, function (gltf) {
-                    const model = gltf.scene;
+                }
+                this.loading.meteor[0] = false
+            });
+            gltfLoader.load(meteor2Url.href, (gltf) => {
+                const originModel = gltf.scene;
+                for (let i = 0; i < this.maxMeteorNumber; i++) {
+                    const model = originModel.clone()
                     scene.add(model);
                     model.position.set(...getRandomPosition(200))
                     const sceleFactor = Math.random() * (2 - 0.5) + 0.5;
@@ -236,9 +258,13 @@ export default {
                         movementSpeed: Math.random() * (0.01 - 0.001) + 0.001,
                         movementX: Math.random() < 0.5, movementY: Math.random() < 0.5, movementZ: Math.random() < 0.5
                     })
-                });
-                gltfLoader.load(meteor3Url.href, function (gltf) {
-                    const model = gltf.scene;
+                }
+                this.loading.meteor[1] = false
+            });
+            gltfLoader.load(meteor3Url.href, (gltf) => {
+                const originModel = gltf.scene;
+                for (let i = 0; i < this.maxMeteorNumber; i++) {
+                    const model = originModel.clone()
                     scene.add(model);
                     model.position.set(...getRandomPosition(200))
                     const sceleFactor = Math.random() * (0.05 - 0.01)
@@ -251,8 +277,10 @@ export default {
                         movementSpeed: Math.random() * (0.01 - 0.001) + 0.001,
                         movementX: Math.random() < 0.5, movementY: Math.random() < 0.5, movementZ: Math.random() < 0.5
                     })
-                });
-            }
+                }
+                this.loading.meteor[2] = false
+            });
+
 
 
 
@@ -260,15 +288,13 @@ export default {
             const blackholeUrl = new URL('@/assets/model/blackhole.glb', import.meta.url)
             let blackholeAnimations = []
             let blackholes = []
-            gltfLoader.load(blackholeUrl.href, function (gltf) {
+            gltfLoader.load(blackholeUrl.href, (gltf) => {
                 const model = gltf.scene;
-
                 for (let i = 0; i < 10; i++) {
                     const modelClone = model.clone()
                     scene.add(modelClone);
                     blackholes.push(modelClone)
                     modelClone.position.set(...getRandomPosition(200))
-                    //modelClone.position.set(-50, -50, -50)
                     modelClone.rotation.set(Math.random() * 10, Math.random() * 10, Math.random() * 10)
                     const animation = new THREE.AnimationMixer(modelClone);
                     animation.timeScale = 2.0
@@ -279,10 +305,7 @@ export default {
                         action.play();
                     });
                 }
-
-
-
-
+                this.loading.blackhole = false
             });
 
 
@@ -293,7 +316,7 @@ export default {
 
             let spaceShip = null
             let spaceShipArrowHelper = null
-            gltfLoader.load(spaceShipUrl.href, function (gltf) {
+            gltfLoader.load(spaceShipUrl.href, (gltf) => {
                 const model = gltf.scene;
 
                 const geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -332,6 +355,8 @@ export default {
                     const action = spaceShipAnimationMixer.clipAction(clip);
                     action.play();
                 });
+
+                this.loading.spaceShip = false
             });
             let detectCollisionLock = false, detectPositionTooFarLock = false, detectShootLock = false
 
@@ -646,6 +671,8 @@ export default {
                     }
                 }
             }
+
+            renderer.render(scene, camera);
             function animate() {
                 stats.begin();
 
@@ -675,6 +702,8 @@ export default {
                 stats.end();
                 renderer.render(scene, camera);
             }
+
+            //this.loading = false
             this.addSpaceShipMovementListener(movementKey)
             this.addCanvasResizeListener(camera, renderer)
             renderer.setAnimationLoop(animate);
