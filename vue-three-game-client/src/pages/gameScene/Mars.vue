@@ -1,5 +1,8 @@
 <template>
-    <div>
+    <Loading v-show="!loadDone" />
+
+
+    <div v-show="loadDone">
         <canvas ref="three"></canvas>
         <div class="scorePanel">
             <div class="bar">
@@ -30,11 +33,12 @@ import Stats from 'stats.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import starsTexture from '@/assets/img/space2.jpg';
-import testTexture from '@/assets/img/earth.jpg'
 import { GUI } from 'dat.gui'
 import * as YUKA from 'yuka'
+import Loading from '@/components/Loading.vue'
+
 class Car {
-    constructor(scene, world, maxOil, maxEnergy, level, camera) {
+    constructor(scene, world, maxOil, maxEnergy, level, camera, loading) {
         this.scene = scene;
         this.camera = camera
         this.world = world;
@@ -62,6 +66,7 @@ class Car {
         this.maxEnergy = maxEnergy
         this.oil = maxOil
         this.energy = maxEnergy
+        this.loading = loading
     }
 
     init() {
@@ -88,21 +93,26 @@ class Car {
             this.chassis = gltf.scene;
             this.scene.add(this.chassis);
             this.camera.parent = this.chassis
+            this.loading.car.chassisModel = false
             this.setLight()
         })
 
         this.wheels = [];
-        for (let i = 0; i < 4; i++) {
-            gltfLoader.load(wheelUrl.href, gltf => {
-                const model = gltf.scene;
+
+        gltfLoader.load(wheelUrl.href, gltf => {
+            const originModel = gltf.scene;
+            for (let i = 0; i < 4; i++) {
+                const model = originModel.clone()
                 this.wheels[i] = model;
                 if (i === 1 || i === 3)
                     this.wheels[i].scale.set(-1 * this.wheelScale.frontWheel, 1 * this.wheelScale.frontWheel, -1 * this.wheelScale.frontWheel);
                 else
                     this.wheels[i].scale.set(1 * this.wheelScale.frontWheel, 1 * this.wheelScale.frontWheel, 1 * this.wheelScale.frontWheel);
                 this.scene.add(this.wheels[i]);
-            })
-        }
+            }
+            this.loading.car.wheelsModel = false
+        })
+
     }
 
     setChassis() {
@@ -118,6 +128,7 @@ class Car {
             indexForwardAxis: 2
         });
         this.car.addToWorld(this.world);
+        this.loading.car.cannonBody = false
     }
 
     setLight() {
@@ -158,7 +169,7 @@ class Car {
         ptLight.castShadow = true
         this.scene.add(ptLight);
         this.chassis.add(ptLight)
-
+        this.loading.car.light = false
     }
 
     setWheels() {
@@ -233,6 +244,7 @@ class Car {
             const quaternion = new CANNON.Quaternion().setFromEuler(-Math.PI / 2, 0, 0)
             wheelBody.addShape(cylinderShape, new CANNON.Vec3(), quaternion)
         }.bind(this));
+        this.loading.car.wheelsBind = false
     }
 
     controls() {
@@ -365,21 +377,37 @@ class Car {
 
 
 export default {
+    components: { Loading },
     data() {
         return {
             score: 0,
             oil: 10 - this.$route.query.level ?? 1,
-            energy: 10 - this.$route.query.level ?? 1
+            energy: 10 - this.$route.query.level ?? 1,
+            loading: {
+                car: {
+                    chassisModel: true,
+                    wheelsModel: true,
+                    wheelsBind: true,
+                    cannonBody: true,
+                    light: true
+                },
+                treasure: false,
+                rock: false,
+                UFO: false
+            }
         }
     },
     mounted() {
         this.initScene()
     },
+    computed: {
+        loadDone() {
+            return !(Object.values(this.loading.car).includes(true) || this.loading.treasure || this.loading.rock || this.loading.UFO)
+        }
+    },
     methods: {
         async initScene() {
             const level = parseInt(this.$route.query.level) ?? 1
-
-            console.log("loading")
             let stats = new Stats();
             stats.showPanel(0);
             document.body.appendChild(stats.dom);
@@ -395,7 +423,7 @@ export default {
             camera.position.set(0, 10, -10)
             scene.add(camera)
 
-            const car = new Car(scene, world, this.oil, this.energy, level, camera);
+            const car = new Car(scene, world, this.oil, this.energy, level, camera, this.loading);
             car.init();
 
             const bodyMaterial = new CANNON.Material();
@@ -498,7 +526,7 @@ export default {
             let treasureList = []
             let treasureListLoadedCount = 0
 
-            gltfLoader.load(treasure.href, async function (gltf) {
+            gltfLoader.load(treasure.href, (gltf) => {
                 const treasureModel = gltf.scene;
                 for (let i = 0; i < 5 + level * 2; i++) {
                     const model = treasureModel.clone()
@@ -521,12 +549,13 @@ export default {
                     })
                     treasureListLoadedCount += 1
                 }
+                this.loading.treasure = false
             });
 
             let rocksList = []
             const rockUrl = new URL('@/assets/model/rock.glb', import.meta.url)
             let rockModel
-            gltfLoader.load(rockUrl.href, async function (gltf) {
+            gltfLoader.load(rockUrl.href, (gltf) => {
                 rockModel = gltf.scene;
                 for (let i = 0; i < 20 + level * 3; i++) {
                     const model = rockModel.clone();
@@ -548,8 +577,8 @@ export default {
                     rockBody.position.copy(model.position)
                     world.addBody(rockBody)
                     rocksList.push({ model, cannonBody: rockBody })
-
                 }
+                this.loading.rock = false
             });
 
             const gui = new GUI()
@@ -606,7 +635,7 @@ export default {
 
             const UFO = new URL('@/assets/model/ufo.glb', import.meta.url)
 
-            gltfLoader.load(UFO.href, function (gltf) {
+            gltfLoader.load(UFO.href, (gltf) => {
                 let UFOModel = gltf.scene;
                 UFOModel.matrixAutoUpdate = false
                 scene.add(UFOModel)
@@ -618,6 +647,8 @@ export default {
                 pursuer.rotation.set(0, -Math.PI / 2, 0)
                 pursuer.maxSpeed = 20;
                 pursuer.steering.add(pursuitBehavior);
+
+                this.loading.UFO = false
             });
 
             const updateTreasureList = async () => {
