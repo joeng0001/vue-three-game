@@ -1,8 +1,8 @@
-﻿using connectMySQL.Model;
-using connectMySQL.Repositories;
+﻿using server.Model;
+using server.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
-namespace connectMySQL.Controllers
+namespace server.Controllers
 {
 
     [Route("api/[controller]")]
@@ -15,7 +15,7 @@ namespace connectMySQL.Controllers
 
         public UsersController(IUserRepository userRepository)
         {
-            this._userRepository = userRepository;
+            _userRepository = userRepository;
         }
 
         [HttpGet]
@@ -30,14 +30,14 @@ namespace connectMySQL.Controllers
             return await _userRepository.Get(id);
         }
         [HttpPost]
-        public async Task<ActionResult<User>>PostUsers([FromBody] User user)
+        public async Task<ActionResult<User>> PostUsers([FromBody] User user)
         {
             var newUser = await _userRepository.Create(user);
             return CreatedAtAction(nameof(GetUsers), new { id = newUser.Id }, newUser);
         }
 
         [HttpPut]
-        public async Task<ActionResult>PutUsers(int id, [FromBody]User user)
+        public async Task<ActionResult> PutUsers(int id, [FromBody] User user)
         {
             if (id != user.Id)
             {
@@ -45,7 +45,7 @@ namespace connectMySQL.Controllers
             }
 
             await _userRepository.Update(user);
-            return NoContent(); 
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
@@ -61,5 +61,16 @@ namespace connectMySQL.Controllers
             await _userRepository.Delete(userToDelete.Id);
             return NoContent();
         }
+
+
+
+        [HttpPost("register")]
+        public async Task<ActionResult<User>> Register()
+        {
+            System.Console.WriteLine("receive register request");
+            return NoContent();
+        }
+
+
     }
 }

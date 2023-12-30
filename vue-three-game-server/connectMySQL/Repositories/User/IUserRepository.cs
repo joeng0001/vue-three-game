@@ -1,6 +1,6 @@
-﻿using connectMySQL.Model;
+﻿using server.Model;
 
-namespace connectMySQL.Repositories
+namespace server.Repositories
 {
     public interface IUserRepository
     {

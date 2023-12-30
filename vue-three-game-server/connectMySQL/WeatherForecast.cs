@@ -1,4 +1,4 @@
-namespace connectMySQL
+namespace server
 {
     public class WeatherForecast
     {

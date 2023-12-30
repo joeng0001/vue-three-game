@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.Eventing.Reader;
-using connectMySQL.Model;
+using server.Model;
 using Microsoft.EntityFrameworkCore;
 
-namespace connectMySQL.Repositories
+namespace server.Repositories
 {
     public class UserRepository:IUserRepository
     {

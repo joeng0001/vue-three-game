@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "y/svRDkKadGFaOA4e5W1tL+3NWZf1tR2HIqtKyKh4P5WjWs0EMuL174JQT0+smO7srcqPsHenp0CE9+ugPnS1g==",
+  "dgSpecHash": "Q95jbiNnWGLOtStfRvhhXqP4TPDSoUgVKR78vBQ+6WgvwcuEe9hOKUYp5SBjcujXYkiZXHGzA8avsp51vxTH5w==",
   "success": true,
-  "projectFilePath": "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\connectMySQL\\connectMySQL.csproj",
+  "projectFilePath": "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\connectMySQL\\server.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\joegg\\.nuget\\packages\\google.protobuf\\3.21.9\\google.protobuf.3.21.9.nupkg.sha512",
     "C:\\Users\\joegg\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

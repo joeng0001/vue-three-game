@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace connectMySQL.Controllers
+namespace server.Controllers
 {
     [ApiController]
     [Route("[controller]")]

@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using connectMySQL.Model;
+using server.Model;
 public class UserContext : DbContext
 {
     public UserContext(DbContextOptions<UserContext> options) : base(options)

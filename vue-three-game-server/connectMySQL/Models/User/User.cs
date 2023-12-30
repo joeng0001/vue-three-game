@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace connectMySQL.Model
+namespace server.Model
 {
     public class User
     {
