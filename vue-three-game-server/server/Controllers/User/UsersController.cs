@@ -109,14 +109,14 @@ namespace server.Controllers
             var cookieOptions = new CookieOptions {
                 Expires = DateTime.Now.AddDays(1),
                 Path = "/",
-                HttpOnly = true,
+                HttpOnly = false,
                 Secure = true,
                 Domain = "localhost",
                 SameSite = SameSiteMode.None
             };
 
             Response.Cookies.Append("token", token, cookieOptions);
-            return Ok("login success");
+            return Ok(token);
         }
 
         [HttpPost("logout")]
@@ -126,7 +126,7 @@ namespace server.Controllers
             {
                 Expires = DateTime.Now.AddDays(-1),
                 Path = "/",
-                HttpOnly = true,
+                HttpOnly = false,
                 Secure = true,
                 Domain = "localhost",
                 SameSite = SameSiteMode.None

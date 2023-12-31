@@ -77,3 +77,9 @@ C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\
 C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\System.IdentityModel.Tokens.Jwt.dll
 C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\RestSharp.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\Scrutor.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\Swashbuckle.AspNetCore.Filters.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll

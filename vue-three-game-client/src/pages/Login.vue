@@ -19,6 +19,7 @@
             <v-card-actions class="d-flex justify-end">
                 <v-btn color="primary" @click="login" v-if="page === 'login'">Login</v-btn>
                 <v-btn color="primary" @click="register" v-else>Register</v-btn>
+                <v-btn color="primary" @click="test">test</v-btn>
             </v-card-actions>
         </v-card>
     </div>
@@ -50,10 +51,10 @@ export default {
                     if (!res.ok) {
                         throw new Error(await res.text());
                     }
-                    return res.text()
+                    return res.text()//token,stored in cookies
                 })
                 .then(res => {
-                    this.controlAlert(true, "success", res, 3000)
+                    this.controlAlert(true, "success", "login success", 3000)
                     this.$store.dispatch('setLoginStatus', true)
                 }).catch(err => {
                     this.controlAlert(true, "error", err)
@@ -85,6 +86,15 @@ export default {
                 setTimeout(() => { this.alert.open = false }, timeout)
             }
         },
+        test() {
+            http.test().then(async res => {
+                console.log("success")
+                const real_res = await res.text()
+                console.log(real_res)
+            }).catch(e => {
+                console.error("err")
+            })
+        }
 
     }
 };
