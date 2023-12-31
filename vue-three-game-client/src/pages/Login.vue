@@ -25,7 +25,6 @@
 </template>
 <script>
 import http from '@/http'
-import store from '@/store'
 export default {
     name: "Login",
     data() {
@@ -45,6 +44,7 @@ export default {
     },
     methods: {
         login() {
+            this.loading = true
             http.login({ Username: this.user.name, Password: this.user.password })
                 .then(async res => {
                     if (!res.ok) {
@@ -57,9 +57,12 @@ export default {
                     this.$store.dispatch('setLoginStatus', true)
                 }).catch(err => {
                     this.controlAlert(true, "error", err)
+                }).finally(() => {
+                    this.loading = false
                 })
         },
         register() {
+            this.loading = true
             http.register({ Username: this.user.name, Password: this.user.password })
                 .then(async res => {
                     if (!res.ok) {
@@ -69,8 +72,11 @@ export default {
                 })
                 .then(res => {
                     this.controlAlert(true, "success", res, 3000)
+                    this.page = 'login'
                 }).catch(err => {
                     this.controlAlert(true, "error", err)
+                }).finally(() => {
+                    this.loading = false
                 })
         },
         controlAlert(open, type, msg, timeout) {
@@ -78,7 +84,8 @@ export default {
             if (timeout) {
                 setTimeout(() => { this.alert.open = false }, timeout)
             }
-        }
+        },
+
     }
 };
 </script>

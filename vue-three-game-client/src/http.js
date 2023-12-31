@@ -24,7 +24,7 @@ const fetchFnc = (path, method, data) => {
 
 export default {
   test() {
-    return fetchFnc("/api/Users");
+    return fetchFnc("/api/Users/test");
   },
 
   register(data) {

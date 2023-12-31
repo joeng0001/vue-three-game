@@ -7,6 +7,8 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Web;
+using Microsoft.AspNetCore.DataProtection;
+
 namespace server.Controllers
 {
 
@@ -104,12 +106,15 @@ namespace server.Controllers
                 return BadRequest("Incorrect Login Info");
             }
             string token = createToken(req);
-            var cookieOptions = new CookieOptions();
-            cookieOptions.Expires = DateTime.Now.AddDays(1);
-            cookieOptions.Path = "/";
-            cookieOptions.HttpOnly = true;
-            cookieOptions.Secure = true;
-            cookieOptions.Domain = "localhost";
+            var cookieOptions = new CookieOptions {
+                Expires = DateTime.Now.AddDays(1),
+                Path = "/",
+                HttpOnly = true,
+                Secure = true,
+                Domain = "localhost",
+                SameSite = SameSiteMode.None
+            };
+
             Response.Cookies.Append("token", token, cookieOptions);
             return Ok("login success");
         }
@@ -117,16 +122,28 @@ namespace server.Controllers
         [HttpPost("logout")]
         public async Task<ActionResult<string>> Logout()
         {
-            var cookieOptions = new CookieOptions();
-            cookieOptions.Expires = DateTime.Now.AddDays(-1);
-            cookieOptions.Path = "/";
-            cookieOptions.HttpOnly = true;
-            cookieOptions.Secure = true;
-            cookieOptions.Domain = "localhost";
+            var cookieOptions = new CookieOptions
+            {
+                Expires = DateTime.Now.AddDays(-1),
+                Path = "/",
+                HttpOnly = true,
+                Secure = true,
+                Domain = "localhost",
+                SameSite = SameSiteMode.None
+            };
             Response.Cookies.Append("token", "", cookieOptions);
             return Ok("Logout success");
         }
 
+
+        [HttpGet("test")]
+        public async Task<ActionResult<string>> test()
+        {
+            System.Console.WriteLine("receive test request");
+            string cookieValue = Request.Cookies["token"];
+            System.Console.WriteLine(cookieValue);
+            return Ok("Logout success");
+        }
 
         private void createHashPassword(string password,out byte[] hashPassword,out byte[] salt)
         {
@@ -141,7 +158,6 @@ namespace server.Controllers
         {
             using (var hmac = new HMACSHA512(salt))
             {
-               
                 var computedHashPW = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
                 return computedHashPW.SequenceEqual(hashPassword);
             }
