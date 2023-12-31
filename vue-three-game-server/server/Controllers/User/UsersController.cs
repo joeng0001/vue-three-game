@@ -1,7 +1,12 @@
 ﻿using server.Model;
 using server.Repositories;
 using Microsoft.AspNetCore.Mvc;
-
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Web;
 namespace server.Controllers
 {
 
@@ -12,10 +17,13 @@ namespace server.Controllers
     {
 
         private readonly IUserRepository _userRepository;
+        private readonly IConfiguration _configuration;
 
-        public UsersController(IUserRepository userRepository)
+        public UsersController(IUserRepository userRepository,IConfiguration configuration)
         {
             _userRepository = userRepository;
+            _configuration=configuration;
+
         }
 
         [HttpGet]
@@ -65,12 +73,87 @@ namespace server.Controllers
 
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register()
+        public async Task<ActionResult<User>> Register(UserAuth req)
         {
-            System.Console.WriteLine("receive register request");
-            return NoContent();
+            createHashPassword(req.Password, out byte[] hashPassword, out byte[] salt);
+            var User = new User();
+            User.Name = req.Username;
+            User.password = hashPassword;
+            User.salt = salt;
+            User=await _userRepository.Create(User);
+            return CreatedAtAction(nameof(GetUsers), new { id = User.Id }, User.Name);
         }
 
+        [HttpPost("login")]
+        public async Task<ActionResult<string>> Login(UserAuth req)
+        {
+            var user=await _userRepository.GetUserByName(req.Username);
+            if (user is null) // userName not found
+            {
+                return BadRequest("Incorrect Login Info");
+            }
+            if (!verifyPassword(req.Password, user.password, user.salt)) // incorrect password
+            {
+                return BadRequest("Incorrect Login Info");
+            }
+            
+            string token = createToken(req);
+            var cookieOptions = new CookieOptions();
+            cookieOptions.Expires = DateTime.Now.AddDays(1);
+            cookieOptions.Path = "/";
+            Response.Cookies.Append("token", token, cookieOptions);
+            return Ok("login success");
+        }
+
+        [HttpPost("logout")]
+        public async Task<ActionResult<string>> Logout()
+        {
+            var cookieOptions = new CookieOptions();
+            cookieOptions.Expires = DateTime.Now.AddDays(-1);
+            cookieOptions.Path = "/";
+            Response.Cookies.Append("token", "", cookieOptions);
+
+            return Ok("Logout success");
+        }
+
+
+        private void createHashPassword(string password,out byte[] hashPassword,out byte[] salt)
+        {
+            using(var hmac=new HMACSHA512())
+            {
+                salt = hmac.Key;
+                hashPassword = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            }
+        }
+
+        private bool verifyPassword(string password, byte[] hashPassword, byte[] salt)
+        {
+            using (var hmac = new HMACSHA512(salt))
+            {
+               
+                var computedHashPW = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                return computedHashPW.SequenceEqual(hashPassword);
+            }
+        }
+
+        private string createToken(UserAuth user)
+        {
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name,user.Username)
+            };
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:TokenKey").Value));
+
+            var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var token = new JwtSecurityToken(
+                    claims: claims,
+                    expires: DateTime.Now.AddDays(1),
+                    signingCredentials:cred
+                    );
+            var jwt=new JwtSecurityTokenHandler().WriteToken(token);
+            return jwt;
+        }
 
     }
 }

@@ -41,5 +41,10 @@ namespace server.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<User> GetUserByName(string name)
+        {
+            return await _context.Users.FirstOrDefaultAsync(e=>e.Name==name);
+        }
+
     }
 }

@@ -71,3 +71,9 @@ C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\obj\
 C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\obj\Debug\net6.0\server.pdb
 C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\obj\Debug\net6.0\server.genruntimeconfig.cache
 C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\obj\Debug\net6.0\ref\server.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\joegg\OneDrive\Desktop\vue-three-game\vue-three-game-server\server\bin\Debug\net6.0\RestSharp.dll

@@ -50,6 +50,10 @@
               "target": "Package",
               "version": "[7.0.10, )"
             },
+            "Microsoft.IdentityModel.Tokens": {
+              "target": "Package",
+              "version": "[7.0.3, )"
+            },
             "MySql.Data": {
               "target": "Package",
               "version": "[8.1.0, )"
@@ -58,9 +62,17 @@
               "target": "Package",
               "version": "[7.0.5, )"
             },
+            "RestSharp": {
+              "target": "Package",
+              "version": "[110.2.0, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.5.0, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[7.0.3, )"
             }
           },
           "imports": [
