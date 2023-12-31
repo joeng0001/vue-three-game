@@ -73,19 +73,26 @@ namespace server.Controllers
 
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserAuth req)
+        public async Task<ActionResult<User>> Register([FromBody]  UserAuth req)
         {
+
+            var user = await _userRepository.GetUserByName(req.Username);
+            if (user is not null) // userName in used
+            {
+                return BadRequest("userName in used");
+            }
             createHashPassword(req.Password, out byte[] hashPassword, out byte[] salt);
             var User = new User();
             User.Name = req.Username;
             User.password = hashPassword;
             User.salt = salt;
             User=await _userRepository.Create(User);
-            return CreatedAtAction(nameof(GetUsers), new { id = User.Id }, User.Name);
+            //return CreatedAtAction(nameof(GetUsers), new { id = User.Id }, User.Name);
+            return Ok("register success");
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserAuth req)
+        public async Task<ActionResult<string>> Login([FromBody]  UserAuth req)
         {
             var user=await _userRepository.GetUserByName(req.Username);
             if (user is null) // userName not found
@@ -96,11 +103,13 @@ namespace server.Controllers
             {
                 return BadRequest("Incorrect Login Info");
             }
-            
             string token = createToken(req);
             var cookieOptions = new CookieOptions();
             cookieOptions.Expires = DateTime.Now.AddDays(1);
             cookieOptions.Path = "/";
+            cookieOptions.HttpOnly = true;
+            cookieOptions.Secure = true;
+            cookieOptions.Domain = "localhost";
             Response.Cookies.Append("token", token, cookieOptions);
             return Ok("login success");
         }
@@ -111,8 +120,10 @@ namespace server.Controllers
             var cookieOptions = new CookieOptions();
             cookieOptions.Expires = DateTime.Now.AddDays(-1);
             cookieOptions.Path = "/";
+            cookieOptions.HttpOnly = true;
+            cookieOptions.Secure = true;
+            cookieOptions.Domain = "localhost";
             Response.Cookies.Append("token", "", cookieOptions);
-
             return Ok("Logout success");
         }
 

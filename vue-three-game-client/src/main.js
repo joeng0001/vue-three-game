@@ -12,14 +12,12 @@ const vuetify = createVuetify({
   components,
   directives,
   icons: {
-    defaultSet: "mdi", //already is default set in vuetify
+    defaultSet: "mdi",
     sets: {
       icon1,
     },
   },
 });
-//end of create vuetify
-//below create vuex
 
 import { createStore } from "vuex";
 import vuex_store from "./store.js";

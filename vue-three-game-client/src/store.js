@@ -1,17 +1,16 @@
 const store = {
   strict: true,
   state: {
-    token: null,
+    isLogin: null,
   },
   mutations: {
-    setToken(state, token) {
-      state.token = token;
-      state.loginStatus = !!token;
+    setLoginStatus(state, status) {
+      state.isLogin = status;
     },
   },
   actions: {
-    setToken({ commit }, token) {
-      commit("setToken", token);
+    setLoginStatus({ commit }, status) {
+      commit("setLoginStatus", status);
     },
   },
 };

@@ -33,10 +33,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(builder =>
 {
-    //builder.WithOrigins("http://localhost:8080")
-    builder.AllowAnyOrigin()
+    //builder.AllowAnyOrigin()
+    builder.WithOrigins("http://localhost:8080")
            .AllowAnyMethod()
-           .AllowAnyHeader();
+           .AllowAnyHeader()
+           .AllowCredentials();
 });
 
 
