@@ -1,7 +1,7 @@
 <template>
     <div class="wrapper">
+        <canvas ref="three" class="canvas"></canvas>
         <v-card class="card" :loading="loading">
-
             <v-card-title>
                 <v-tabs v-model="page" bg-color="primary">
                     <v-tab value="login"> <v-icon>mdi-login</v-icon>Login</v-tab>
@@ -26,6 +26,9 @@
 </template>
 <script>
 import http from '@/http'
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
 export default {
     name: "Login",
     data() {
@@ -42,6 +45,9 @@ export default {
             loading: false,
             page: 'login'
         };
+    },
+    mounted() {
+        this.initBackground()
     },
     methods: {
         login() {
@@ -94,6 +100,61 @@ export default {
             }).catch(e => {
                 console.error("err")
             })
+        },
+        initBackground() {
+            const bgUrl = new URL('@/assets/model/loginBG.glb', import.meta.url)
+            const scene = new THREE.Scene();
+            const canvas = this.$refs.three
+            const renderer = new THREE.WebGLRenderer({ canvas });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            const camera = new THREE.PerspectiveCamera(
+                50,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1300
+            );
+            camera.position.set(431, -87, -26);
+            camera.lookAt(0, -20, 0);
+            const ambient = new THREE.AmbientLight(0xFFFFFF, 1);
+            scene.add(ambient);
+
+            const gltfLoader = new GLTFLoader();
+            let bgAnimation = null
+            let bgModel = null
+            gltfLoader.load(bgUrl.href, function (gltf) {
+                const model = gltf.scene;
+                model.position.set(0, 50, 0)
+                bgModel = model
+                const animation = new THREE.AnimationMixer(model);
+                bgAnimation = animation
+                const clips = gltf.animations;
+                const action = animation.clipAction(clips[0]);
+                action.play();
+
+                scene.add(model);
+            });
+
+            const clock = new THREE.Clock();
+            function animate() {
+                renderer.render(scene, camera);
+
+                const delta = clock.getDelta();
+
+                if (bgAnimation) {
+                    bgAnimation.update(delta);
+                }
+                if (bgModel) {
+                    bgModel.rotation.y += 0.005
+                }
+            }
+
+            renderer.setAnimationLoop(animate);
+
+            window.addEventListener('resize', function () {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
         }
 
     }
@@ -112,5 +173,15 @@ export default {
 
 .card {
     width: 70%;
+    z-index: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.canvas {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 </style>
