@@ -118,6 +118,7 @@ export default {
             const ambient = new THREE.AmbientLight(0xFFFFFF, 1);
             scene.add(ambient);
 
+            scene.background = new THREE.Color(0xffffff);
             const gltfLoader = new GLTFLoader();
             let bgAnimation = null
             let bgModel = null
@@ -144,7 +145,7 @@ export default {
                     bgAnimation.update(delta);
                 }
                 if (bgModel) {
-                    bgModel.rotation.y += 0.005
+                    bgModel.rotation.y += 0.001
                 }
             }
 
