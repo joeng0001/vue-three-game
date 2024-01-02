@@ -1,6 +1,6 @@
 <template>
     <v-dialog width="800" v-model="dialog" persistent>
-        <v-card class="d-flex justify-center" style="background-color:rgba(255, 255, 255, 0);">
+        <v-card class="d-flex justify-center">
             <v-card-title class="d-flex justify-center SceneTitle">
                 <span></span>
                 <span></span>
@@ -11,19 +11,19 @@
 
             <!--after pick the scene,move the camera the the game scenario-->
             <v-card-actions class="d-flex justify-space-between mt-4">
-                <v-btn class="btn" style="color:Aquamarine;" @click="() => $router.push('/Entry/gameLevel?scene=Universe')">
+                <v-btn class="btn" style="color:Aquamarine;" @click="() => $router.push('/entry/gameLevel?scene=Universe')">
                     <v-tooltip activator="parent" location="bottom">Universe
                     </v-tooltip>
                     <canvas ref="universe"></canvas></v-btn>
 
-                <v-btn class="btn" style="color:GreenYellow;" @click="() => $router.push('/Entry/gameLevel?scene=Earth')">
+                <v-btn class="btn" style="color:GreenYellow;" @click="() => $router.push('/entry/gameLevel?scene=Earth')">
                     <v-tooltip activator="parent" location="bottom">Earth
                     </v-tooltip>
                     <canvas ref="earth"></canvas>
                 </v-btn>
 
 
-                <v-btn class="btn" style="color:orange;" @click="() => $router.push('/Entry/gameLevel?scene=Mars')">
+                <v-btn class="btn" style="color:orange;" @click="() => $router.push('/entry/gameLevel?scene=Mars')">
                     <v-tooltip activator="parent" location="bottom">Mars
                     </v-tooltip>
                     <canvas ref="mars"></canvas>
@@ -285,5 +285,18 @@ export default {
     100% {
         bottom: 100%;
     }
+}
+
+
+.v-card {
+    background-color: rgba(255, 255, 255, 0);
+}
+
+.v-card--variant-elevated {
+    box-shadow: none;
+}
+
+.v-dialog>.v-overlay__content>.v-card {
+    box-shadow: none;
 }
 </style>

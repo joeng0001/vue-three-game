@@ -20,7 +20,12 @@ const fetchFnc = (path, method, data) => {
     config.body = JSON.stringify(data);
   }
 
-  return fetch(endPt + path, config);
+  return fetch(endPt + path, config).then(async (res) => {
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+    return res.text();
+  });
 };
 
 export default {

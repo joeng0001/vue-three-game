@@ -12,6 +12,7 @@ import Login from "@/pages/Login.vue";
 
 const routes = [
   {
+    name: "login",
     path: "/login",
     component: Login,
   },
@@ -20,10 +21,12 @@ const routes = [
     component: Entry,
     children: [
       {
+        name: "entry.gameMode",
         path: "gameMode",
         component: GameMode,
       },
       {
+        name: "entry.gameLevel",
         path: "gameLevel",
         component: GameLevel,
       },
@@ -33,14 +36,17 @@ const routes = [
     path: "/gameScene",
     children: [
       {
+        name: "scene.Universe",
         path: "Universe",
         component: Universe,
       },
       {
+        name: "scene.Earth",
         path: "Earth",
         component: Earth,
       },
       {
+        name: "scene.Mars",
         path: "Mars",
         component: Mars,
       },
@@ -69,7 +75,7 @@ router.beforeEach((to, from, next) => {
     next();
     return;
   }
-  if (!store.state.token) {
+  if (!store.state.isLogin) {
     next({ path: "/login" });
     return;
   }

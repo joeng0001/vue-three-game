@@ -1,6 +1,6 @@
 <template>
     <v-dialog width="800" v-model="dialog" persistent>
-        <v-card class="d-flex justify-center" style="background-color:rgba(255, 255, 255, 0);">
+        <v-card class="d-flex justify-center">
             <v-card-title class="d-flex justify-center SceneTitle">
                 <span></span>
                 <span></span>
@@ -176,4 +176,17 @@ export default {
     100% {
         bottom: 100%;
     }
-}</style>
+}
+
+.v-card {
+    background-color: rgba(255, 255, 255, 0);
+}
+
+.v-card--variant-elevated {
+    box-shadow: none;
+}
+
+.v-dialog>.v-overlay__content>.v-card {
+    box-shadow: none;
+}
+</style>
