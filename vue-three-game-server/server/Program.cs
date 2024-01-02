@@ -33,7 +33,7 @@ builder.Services.AddEndpointsApiExplorer();
     {
         Description = "Authorization Header using bearer (\"bearer {token}\")",
         In = ParameterLocation.Header,
-        Name = "Authorization header",
+        Name = "Authorization",
         Type = SecuritySchemeType.ApiKey
     });
 

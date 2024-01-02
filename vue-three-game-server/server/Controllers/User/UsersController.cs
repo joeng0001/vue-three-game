@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Web;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Authorization;
 
 namespace server.Controllers
 {
@@ -180,6 +181,14 @@ namespace server.Controllers
                     );
             var jwt=new JwtSecurityTokenHandler().WriteToken(token);
             return jwt;
+        }
+
+
+        [HttpGet("getUserNameFromToken"),Authorize]
+        public async Task<ActionResult<string>> getUserNameFromToken()
+        {
+            var u= User?.Identity?.Name;
+            return Ok(u);
         }
 
     }
