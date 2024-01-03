@@ -10,11 +10,11 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
-var connectionString = "Server=localhost;Port=3306;Database=newDB;Uid=root;Pwd=password;";
-builder.Services.AddTransient<MySqlConnection>(_ => new MySqlConnection(connectionString));
+var connectionString = "Server=localhost;Database=vue_game_server;User ID=joe;Password=secret_pass;Trusted_Connection=Yes;TrustServerCertificate=true;";
+//builder.Services.AddTransient<MySqlConnection>(_ => new MySqlConnection(connectionString));
 
 builder.Services.AddDbContext<UserContext>(options =>
-    options.UseMySQL(connectionString));
+    options.UseSqlServer(connectionString));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 
