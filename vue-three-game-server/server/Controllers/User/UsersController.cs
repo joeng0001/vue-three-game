@@ -188,7 +188,9 @@ namespace server.Controllers
         public async Task<ActionResult<string>> getUserNameFromToken()
         {
             var u= User?.Identity?.Name;
+            //var u2 = User.FindFirstValue(ClaimTypes.Name);
             return Ok(u);
+            //return Ok(new {u,u2})
         }
 
     }

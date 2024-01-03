@@ -1,16 +1,11 @@
-using server.Model;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
-using server.Model;
 using server.Repositories;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Text;
-using Microsoft.AspNetCore.Authentication;
+
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -27,17 +22,17 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
- builder.Services.AddSwaggerGen(options =>
+builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-    {
-        Description = "Authorization Header using bearer (\"bearer {token}\")",
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey
-    });
+   options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+   {
+       Description = "Authorization Header using bearer (\"bearer {token}\")",
+       In = ParameterLocation.Header,
+       Name = "Authorization",
+       Type = SecuritySchemeType.ApiKey
+   });
 
-    options.OperationFilter<SecurityRequirementsOperationFilter>();
+   options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
