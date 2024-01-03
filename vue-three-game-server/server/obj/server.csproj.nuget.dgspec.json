@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj": {}
+    "c:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj": {}
   },
   "projects": {
-    "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj": {
+    "c:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj",
+        "projectUniqueName": "c:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj",
         "projectName": "server",
-        "projectPath": "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj",
+        "projectPath": "c:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj",
         "packagesPath": "C:\\Users\\joegg\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\obj\\",
+        "outputPath": "c:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\joegg\\AppData\\Roaming\\NuGet\\NuGet.Config",
