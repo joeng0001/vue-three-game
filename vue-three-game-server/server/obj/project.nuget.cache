@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "oGasP+J1CW96P3TM6SpORIjk4N1ksvRgdK/DraRVsm/0xigN+CkewLUyIUaPLSNfKmTXGoGBweOfqmD9Hi8gBQ==",
+  "dgSpecHash": "csDanLOMff/aEY2bL/OW+/GBVCMMo2HX3u2y9u+tf1W8m4Z6RJYjHx2yUT1EmHh5ARkrjCVM0mPDpoOmcNLlYw==",
   "success": true,
-  "projectFilePath": "c:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj",
+  "projectFilePath": "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\joegg\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\joegg\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",
