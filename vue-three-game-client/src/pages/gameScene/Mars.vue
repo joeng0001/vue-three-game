@@ -19,9 +19,9 @@
                         class="oilBar" />
 
                 </div>
-
             </div>
         </div>
+        <div ref="statsDom"></div>
     </div>
 </template>
 
@@ -36,6 +36,7 @@ import starsTexture from '@/assets/img/space2.jpg';
 import { GUI } from 'dat.gui'
 import * as YUKA from 'yuka'
 import Loading from '@/components/Loading.vue'
+import { threeToCannon, ShapeType } from 'three-to-cannon';
 
 class Car {
     constructor(scene, world, maxOil, maxEnergy, level, camera, loading) {
@@ -394,11 +395,17 @@ export default {
                 treasure: false,
                 rock: false,
                 UFO: false
-            }
+            },
+            datGUI: null
         }
     },
     mounted() {
         this.initScene()
+    },
+    beforeUnmount() {
+        if (this.datGUI) {
+            this.datGUI.destroy()
+        }
     },
     computed: {
         loadDone() {
@@ -410,7 +417,8 @@ export default {
             const level = parseInt(this.$route.query.level) ?? 1
             let stats = new Stats();
             stats.showPanel(0);
-            document.body.appendChild(stats.dom);
+            const statsDom = this.$refs.statsDom
+            statsDom.appendChild(stats.dom);
             const canvas = this.$refs.three
             const scene = new THREE.Scene()
             const world = new CANNON.World({
@@ -419,7 +427,7 @@ export default {
             world.broadphase = new CANNON.SAPBroadphase(world);
 
 
-            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000)
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100)
             camera.position.set(0, 10, -10)
             scene.add(camera)
 
@@ -535,11 +543,13 @@ export default {
                         if (node.isMesh)
                             node.castShadow = true
                     })
+                    const result = threeToCannon(model);
+                    const { shape, offset } = result;
                     const boxBody = new CANNON.Body({
                         mass: 1,
-                        shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)),
                         position: new CANNON.Vec3(Math.random() * 100 - 50, 50, Math.random() * 100 - 50), //set it falling from sky
                     });
+                    boxBody.addShape(shape, offset)
                     world.addBody(boxBody);
                     treasureList.push({
                         model,
@@ -566,14 +576,10 @@ export default {
                         if (node.isMesh)
                             node.castShadow = true
                     })
-
-                    const threeBox = new THREE.Box3().setFromObject(model)
-                    var threeBoxSize = new THREE.Vector3();
-                    threeBox.getSize(threeBoxSize);
-                    var boxSize = new CANNON.Vec3(threeBoxSize.x / 2, threeBoxSize.y / 2, threeBoxSize.z / 2);
-                    const rockShape = new CANNON.Box(boxSize)
                     const rockBody = new CANNON.Body({ mass: 100 })
-                    rockBody.addShape(rockShape)
+                    const result = threeToCannon(model);
+                    const { shape, offset } = result;
+                    rockBody.addShape(shape, offset);
                     rockBody.position.copy(model.position)
                     world.addBody(rockBody)
                     rocksList.push({ model, cannonBody: rockBody })
@@ -582,7 +588,7 @@ export default {
             });
 
             const gui = new GUI()
-
+            this.datGUI = gui
             const positionFolder = gui.addFolder('Position')
             positionFolder.add({
                 resetPosition: () => {

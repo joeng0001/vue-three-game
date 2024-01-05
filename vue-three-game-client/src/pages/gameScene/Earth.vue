@@ -16,11 +16,16 @@ import earthTexture from '@/assets/img/earth.jpg';
 export default {
     data() {
         return {
-
+            datGUI: null
         }
     },
     mounted() {
         this.initScene()
+    },
+    beforeUnmount() {
+        if (this.datGUI) {
+            this.datGUI.destroy()
+        }
     },
     methods: {
         async initScene() {
@@ -292,6 +297,7 @@ export default {
             document.body.appendChild(stats.dom)
 
             const gui = new GUI()
+            this.datGUI = gui
             const physicsFolder = gui.addFolder('Physics')
             physicsFolder.add(world.gravity, 'x', -10.0, 10.0, 0.1)
             physicsFolder.add(world.gravity, 'y', -10.0, 10.0, 0.1)
