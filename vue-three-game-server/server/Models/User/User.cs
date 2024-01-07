@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace server.Model
 {
+    [Table("Users")]
     public class User
     {
 

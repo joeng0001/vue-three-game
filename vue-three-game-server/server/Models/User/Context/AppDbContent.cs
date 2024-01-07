@@ -10,7 +10,7 @@ public class UserContext : DbContext
             Database.EnsureCreated();
             if (!Users.Any())
             {
-                Users.Add(new User { Name = "John Doe", password=new byte[1024],salt=new byte[10] });
+                Users.Add(new User { Name = "John Doe", password=new byte[10],salt=new byte[10] });
                 SaveChanges(); 
             }
         }
@@ -18,6 +18,15 @@ public class UserContext : DbContext
         Database.Migrate();
         
     }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        //modelBuilder.Entity<ChildEntity>()
+        //    .HasOne(c => c.ParentEntity)
+        //    .WithMany(p => p.Children)
+        //    .HasForeignKey(c => c.ParentEntityId)
+        //    .OnDelete(DeleteBehavior.Restrict);
 
-    
+        //base.OnModelCreating(modelBuilder);
+    }
+
 }
