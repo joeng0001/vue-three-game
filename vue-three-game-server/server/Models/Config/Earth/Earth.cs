@@ -6,7 +6,7 @@ namespace server.Model
     public class Earth
     {
         private readonly int _level;
-        public Earth(int level)
+        public Earth(int level=1)
         {
             this._level = level;   
         }

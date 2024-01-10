@@ -3,7 +3,7 @@
     public class Universe
     {
 
-        public Universe(int level)
+        public Universe(int level=1)
         {
             this.ammo = 50 + level * 5;
             this.life = 50 + level * 5;

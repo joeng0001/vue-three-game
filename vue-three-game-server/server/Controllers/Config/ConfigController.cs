@@ -14,18 +14,16 @@ namespace server.Controllers.Config
     public class ConfigController : ControllerBase
     {
 
-        [HttpGet("Universe")]
-        public async Task<ActionResult<Universe>> GetUniverseConfig(int lv)
+        [HttpGet("Universe/{lv}")]
+        public ActionResult<Universe> GetUniverseConfig(int lv)
         {
-            Universe res = new Universe(lv);
-            return Ok(res);
+            return Ok(new Universe(lv));
         }
 
-        [HttpGet("Mars")]
-        public async Task<ActionResult<Mars>> GetMarsConfig(int lv)
+        [HttpGet("Mars/{lv}")]
+        public ActionResult<Mars> GetMarsConfig(int lv)
         {
-            Mars res = new Mars(lv);
-            return Ok(res);
+            return Ok(new Mars(lv));
         }
     }
 }
