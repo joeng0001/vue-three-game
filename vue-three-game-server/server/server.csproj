@@ -24,9 +24,4 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\Config\Mars\" />
-    <Folder Include="Models\Config\Universe\" />
-  </ItemGroup>
-
 </Project>

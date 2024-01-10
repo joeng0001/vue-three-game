@@ -5,12 +5,19 @@ namespace server.Model
 {
     public class Earth
     {
+        private readonly int _level;
+        public Earth(int level)
+        {
+            this._level = level;   
+        }
 
-        public int gravity { get; set; }
+        public int gravity { get;  } 
 
-        public int friction { get; set; }
+        public int friction { get;  }
 
 
-        
+
     }
+
+    
 }

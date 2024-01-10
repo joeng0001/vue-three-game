@@ -111,7 +111,7 @@ export default {
                     axis: new THREE.Vector3(0, 0, 1)
                 },
             },
-            CollisionDistance: null,
+            CollisionDistance: 0,
             score: 0,
             ammo: 50 + this.getLevel() * 5,
             life: 50 + this.getLevel() * 5,
