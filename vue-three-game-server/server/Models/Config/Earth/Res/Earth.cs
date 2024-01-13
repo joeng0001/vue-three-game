@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace server.Model
+namespace server.Models.Config.Earth
 {
     public class Earth
     {

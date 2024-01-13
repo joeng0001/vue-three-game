@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using server.Model;
-using server.Models.Config.Universe;
+using server.Models.Config.Earth;
 using server.Models.Config.Mars;
+using server.Models.Config.Universe;
 using System.Reflection;
 using System;
 using System.Runtime.ConstrainedExecution;
 using Microsoft.AspNetCore.Authorization;
+
 
 namespace server.Controllers.Config
 {
