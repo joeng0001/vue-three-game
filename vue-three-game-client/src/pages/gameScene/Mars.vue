@@ -6,16 +6,15 @@
         <canvas ref="three"></canvas>
         <div class="scorePanel">
             <div class="bar">
-                <div class="score"> Score: &nbsp;{{ score }}/{{ 5 + $route.query.level * 2 }} </div>
+                <div class="score"> Score: &nbsp;{{ score }}/{{ maxScore }} </div>
                 <div style="display:flex;align-items: center;justify-content: space-between;">
                     <span>Oil: </span>
-                    <v-progress-linear :model-value="oil" :max="10 - $route.query.level" bg-color="white" color="success"
-                        class="oilBar" />
+                    <v-progress-linear :model-value="oil" :max="maxOil" bg-color="white" color="success" class="oilBar" />
 
                 </div>
                 <div style="display:flex;align-items: center;justify-content: space-between;">
                     <span>Energy: </span>
-                    <v-progress-linear :model-value="energy" :max="10 - $route.query.level" bg-color="white" color="primary"
+                    <v-progress-linear :model-value="energy" :max="maxEnergy" bg-color="white" color="primary"
                         class="oilBar" />
 
                 </div>
@@ -37,6 +36,7 @@ import { GUI } from 'dat.gui'
 import * as YUKA from 'yuka'
 import Loading from '@/components/Loading.vue'
 import { threeToCannon, ShapeType } from 'three-to-cannon';
+import http from "@/http.js"
 
 class Car {
     constructor(scene, world, maxOil, maxEnergy, level, camera, loading) {
@@ -382,8 +382,26 @@ export default {
     data() {
         return {
             score: 0,
-            oil: 10 - this.$route.query.level ?? 1,
-            energy: 10 - this.$route.query.level ?? 1,
+            maxScore: 0,
+            oil: 0,
+            maxOil: 0,
+            energy: 0,
+            maxEnergy: 0,
+            gravity: {
+                x: 0,
+                y: 0,
+                z: 0
+            },
+            bodyGroundContact: {
+                friction: 0,
+                restitution: 0
+            },
+            preDefineColors: [
+                [], []
+            ],
+            numOfRock: 0,
+
+
             loading: {
                 car: {
                     chassisModel: true,
@@ -400,7 +418,10 @@ export default {
         }
     },
     mounted() {
-        this.initScene()
+        this.initConfigData()
+            .then(() => {
+                this.initScene()
+            })
     },
     beforeUnmount() {
         if (this.datGUI) {
@@ -410,11 +431,14 @@ export default {
     computed: {
         loadDone() {
             return !(Object.values(this.loading.car).includes(true) || this.loading.treasure || this.loading.rock || this.loading.UFO)
+        },
+        level() {
+            return parseInt(this.$route.query.level) ?? 1
         }
     },
     methods: {
         async initScene() {
-            const level = parseInt(this.$route.query.level) ?? 1
+            const level = this.level
             let stats = new Stats();
             stats.showPanel(0);
             const statsDom = this.$refs.statsDom
@@ -422,12 +446,12 @@ export default {
             const canvas = this.$refs.three
             const scene = new THREE.Scene()
             const world = new CANNON.World({
-                gravity: new CANNON.Vec3(0, -9.82, 0), // m/s²
+                gravity: new CANNON.Vec3(this.gravity.x, this.gravity.y, this.gravity.z), // m/s²
             })
             world.broadphase = new CANNON.SAPBroadphase(world);
 
 
-            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100)
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500)
             camera.position.set(0, 10, -10)
             scene.add(camera)
 
@@ -439,10 +463,7 @@ export default {
             const bodyGroundContactMaterial = new CANNON.ContactMaterial(
                 bodyMaterial,
                 groundMaterial,
-                {
-                    friction: 0.1,
-                    restitution: 0.3
-                }
+                this.bodyGroundContact
             )
             world.addContactMaterial(bodyGroundContactMaterial)
 
@@ -491,10 +512,6 @@ export default {
             let vertices = [];
             let faces = [];
             const colors = [];
-            const preDefineColors = [
-                [0.7647058823529411, 0.3137254901960784, 0.1411764705882353],  // Mars Orange
-                [0.8274509803921568, 0.4117647058823529, 0.19607843137254902], // Dusty Brown
-            ]
             for (let i = 0; i < sizeX; i++) {
                 for (let j = 0; j < sizeY; j++) {
                     let x = i * hfShape.elementSize - sizeX * hfShape.elementSize / 2;
@@ -502,8 +519,8 @@ export default {
                     let z = -j * hfShape.elementSize + sizeY * hfShape.elementSize / 2;
                     vertices.push(x, y, z);
                     const color = new THREE.Color();
-                    const randomIndex = Math.floor(Math.random() * preDefineColors.length)
-                    color.setRGB(preDefineColors[randomIndex][0], preDefineColors[randomIndex][1], preDefineColors[randomIndex][2]);
+                    const randomIndex = Math.floor(Math.random() * this.preDefineColors.length)
+                    color.setRGB(this.preDefineColors[randomIndex][0], this.preDefineColors[randomIndex][1], this.preDefineColors[randomIndex][2]);
 
                     colors.push(color.r, color.g, color.b);
 
@@ -536,7 +553,7 @@ export default {
 
             gltfLoader.load(treasure.href, (gltf) => {
                 const treasureModel = gltf.scene;
-                for (let i = 0; i < 5 + level * 2; i++) {
+                for (let i = 0; i < this.maxScore; i++) {
                     const model = treasureModel.clone()
                     scene.add(model);
                     model.traverse(function (node) {
@@ -544,12 +561,12 @@ export default {
                             node.castShadow = true
                     })
                     const result = threeToCannon(model);
-                    const { shape, offset } = result;
+                    const { shape } = result;
                     const boxBody = new CANNON.Body({
                         mass: 1,
                         position: new CANNON.Vec3(Math.random() * 100 - 50, 50, Math.random() * 100 - 50), //set it falling from sky
                     });
-                    boxBody.addShape(shape, offset)
+                    boxBody.addShape(shape)
                     world.addBody(boxBody);
                     treasureList.push({
                         model,
@@ -567,7 +584,7 @@ export default {
             let rockModel
             gltfLoader.load(rockUrl.href, (gltf) => {
                 rockModel = gltf.scene;
-                for (let i = 0; i < 20 + level * 3; i++) {
+                for (let i = 0; i < this.numOfRock; i++) {
                     const model = rockModel.clone();
                     model.scale.set(Math.random() * (0.1 - 0.05) + 0.05, Math.random() * (0.1 - 0.05) + 0.05, Math.random() * (0.1 - 0.05) + 0.05)
                     model.position.set(Math.random() * (150) - 75, Math.random() * (150) - 75, Math.random() * (150) - 75)
@@ -605,7 +622,6 @@ export default {
 
             const controls = new OrbitControls(camera, canvas)
             controls.enableDamping = true
-
 
             const renderer = new THREE.WebGLRenderer({
                 canvas: canvas
@@ -677,7 +693,7 @@ export default {
             const yukaTime = new YUKA.Time();
             const timeStep = 1 / 60
             const tick = () => {
-                if (!camera || !car?.chassis || treasureListLoadedCount != 5 + level * 2) return
+                if (!camera || !(car?.chassis?.position) || treasureListLoadedCount != 5 + level * 2) return
 
                 try {
                     stats.begin();
@@ -707,6 +723,18 @@ export default {
                 }
             }
             renderer.setAnimationLoop(tick);
+        },
+        async initConfigData() {
+            await http.getMarsConfig(this.level)
+                .then(res => {
+                    res = JSON.parse(res)
+                    for (const key in res) {
+                        this.$data[key] = res[key]
+                    }
+                })
+                .catch(e => {
+                    console.error("error in getting config")
+                })
         }
     }
 }

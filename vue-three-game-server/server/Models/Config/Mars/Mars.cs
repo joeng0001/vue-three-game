@@ -4,14 +4,22 @@
     {
         public Mars(int level=1)
         {
-            this.oil = 10 - level;
-            this.energy = 10 - level;
+            this.maxScore = 5+ 2 * level;
+
+            this.oil = this.maxOil= 10 - level;
+            this.energy = this.maxEnergy= 10 - level;
+
+            this.numOfRock = 20 + level * 3;
         }
 
         public int score { get; } = 0;
-        public double oil { get; set; }
+        public int maxScore { get;  }
+        public double oil { get;  }
+        public double maxOil { get;  }
+        public double energy { get;  }
+        public double maxEnergy { get;  }
 
-        public double energy { get; set; }
+        public int numOfRock { get; }
 
         public Object gravity { get;  } = new { x = 0, y = -9.82, z = 0 };
 

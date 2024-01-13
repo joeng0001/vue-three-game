@@ -6,11 +6,13 @@ using server.Models.Config.Mars;
 using System.Reflection;
 using System;
 using System.Runtime.ConstrainedExecution;
+using Microsoft.AspNetCore.Authorization;
 
 namespace server.Controllers.Config
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ConfigController : ControllerBase
     {
 

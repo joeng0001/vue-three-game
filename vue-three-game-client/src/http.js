@@ -7,10 +7,10 @@ const fetchFnc = (path, method, data) => {
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
   };
 
   if (store.state.isLogin) {
-    config.credentials = "include";
     config.headers.Authorization = `bearer ${getCookie("token")}`;
   }
   if (method) {
@@ -28,19 +28,6 @@ const fetchFnc = (path, method, data) => {
   });
 };
 
-export default {
-  test() {
-    return fetchFnc("/WeatherForecast");
-  },
-
-  register(data) {
-    return fetchFnc("/api/Users/register", "POST", data);
-  },
-  login(data) {
-    return fetchFnc("/api/Users/login", "POST", data);
-  },
-};
-
 function getCookie(cookieName) {
   var name = cookieName + "=";
   var decodedCookie = decodeURIComponent(document.cookie);
@@ -56,3 +43,18 @@ function getCookie(cookieName) {
   }
   return "";
 }
+
+export default {
+  test() {
+    return fetchFnc("/WeatherForecast");
+  },
+  register(data) {
+    return fetchFnc("/api/Users/register", "POST", data);
+  },
+  login(data) {
+    return fetchFnc("/api/Users/login", "POST", data);
+  },
+  getMarsConfig(lv) {
+    return fetchFnc(`/api/Config/Mars/${lv}`);
+  },
+};

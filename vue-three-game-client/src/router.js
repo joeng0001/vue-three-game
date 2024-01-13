@@ -62,15 +62,6 @@ const router = createRouter({
   routes,
 });
 router.beforeEach((to, from, next) => {
-  // routing middleware
-  //   const banned_list = ["/user", "/room_list"];
-
-  //   if (to.path === "/" || to.path === "/registration") {
-  //     if (vuex_store.state.loginStatus) {
-  //       router.push("/home");
-  //       return;
-  //     }
-  //   }
   if (to.path === "/login") {
     next();
     return;
