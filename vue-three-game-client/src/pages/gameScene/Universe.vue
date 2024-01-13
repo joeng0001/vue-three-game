@@ -21,7 +21,6 @@
                     <span>Ammo: </span>
                     <v-progress-linear :model-value="ammo" :max="maxAmmo" bg-color="white" color="secondary"
                         class="lifeBar" />
-
                 </div>
                 <div class="panelContent">
                     <v-btn @click="endGame.dialog = true">end game</v-btn>
@@ -38,7 +37,7 @@
                     <v-spacer></v-spacer>
                     <v-btn text="Try Again" v-show="endGame.win"></v-btn>
                     <v-btn text="back Home" @click="backHome"></v-btn>
-                    <v-btn v-if="getLevel() < 8" text="next level" @click="nextLevel"></v-btn>
+                    <v-btn v-if="level < 8" text="next level" @click="nextLevel"></v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -53,14 +52,20 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import starsTexture from '@/assets/img/space2.jpg';
 import Stats from 'three/examples/jsm/libs/stats.module'
 import Loading from "@/components/Loading.vue"
+import http from "@/http.js"
 export default {
     components: { Loading },
     mounted() {
-        this.initScene()
+        this.initConfigData().then(() => {
+            this.initScene()
+        })
     },
     computed: {
         loadDone() {
             return !(this.loading.ringMesh || this.loading.blackhole || this.loading.spaceShip || this.loading.meteor.includes(true))
+        },
+        level() {
+            return this.$route.query.level > 8 || this.$route.query.level < 1 ? 1 : parseInt(this.$route.query.level)
         }
     },
     data() {
@@ -84,14 +89,14 @@ export default {
                 'shoot': false
             },
             speed: {
-                value: 0.15,
-                factor: 1,
-                rotateSpeed: 0.01,
-                maxSideRotation: 0.2,
-                minSideRotation: -0.2,
-                maxFrontRotation: 0.2,
-                minFrontRotation: 0.2,
-                bulletSpeed: 0.3
+                value: 0,
+                factor: 0,
+                rotateSpeed: 0,
+                maxSideRotation: 0,
+                minSideRotation: 0,
+                maxFrontRotation: 0,
+                minFrontRotation: 0,
+                bulletSpeed: 0
             },
             spaceShipQuaternion: {
                 rotationQuaternion: ((new THREE.Quaternion())),//.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)),
@@ -111,22 +116,22 @@ export default {
                     axis: new THREE.Vector3(0, 0, 1)
                 },
             },
-            CollisionDistance: 0,
+            collisionDistance: 0,
             score: 0,
-            ammo: 50 + this.getLevel() * 5,
-            life: 50 + this.getLevel() * 5,
-            energy: 60 - this.getLevel() * 5,
-            maxLife: 50 + this.getLevel() * 5,
-            maxAmmo: 50 + this.getLevel() * 5,
-            maxEnergy: 60 - this.getLevel() * 5,
-            maxScore: 20 + this.getLevel() * 2,
-            maxMeteorNumber: 10 + this.getLevel() * 15,
-            energyConsume: 0.01 * this.getLevel(),
-            energyResume: 0.005,
-            lifeConsume: 0.001 * this.getLevel(),
+            ammo: 0,
+            life: 0,
+            energy: 0,
+            maxLife: 0,
+            maxAmmo: 0,
+            maxEnergy: 0,
+            maxScore: 0,
+            maxMeteorNumber: 0,
+            energyConsume: 0,
+            energyResume: 0,
+            lifeConsume: 0,
             blackHole: {
                 inBlackhole: false,
-                lifeConsume: 0.002 * this.getLevel()
+                lifeConsume: 0
             },
             endGame: {
                 endGameDialog: false,
@@ -473,7 +478,7 @@ export default {
                 })
             }
 
-            const detectCollisionDistance = async () => {
+            const detectcollisionDistance = async () => {
                 if (!spaceShip) return
                 let min_distance = 9999
                 meteors.map(meteor => {
@@ -487,7 +492,7 @@ export default {
                         min_distance = distance
                     }
                 })
-                this.CollisionDistance = min_distance
+                this.collisionDistance = min_distance
             }
 
             const moveMeteor = async () => {
@@ -683,7 +688,7 @@ export default {
                 detectCollisions()
                 detectMeteorPos()
                 detectBulletPos()
-                detectCollisionDistance()
+                detectcollisionDistance()
                 detectWinOrLose()
                 //movement
                 moveSpaceShip(camera)
@@ -730,15 +735,24 @@ export default {
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
         },
-        getLevel() {
-            return this.$route.query.level > 8 || this.$route.query.level < 1 ? 1 : parseInt(this.$route.query.level)
-        },
         async nextLevel() {
-            await this.$router.push({ query: { level: this.getLevel() + 1 } });
+            await this.$router.push({ query: { level: this.level + 1 } });
             this.$router.go(0);
         },
         backHome() {
             this.$router.push({ path: '/Entry/gameMode' })
+        },
+        async initConfigData() {
+            await http.getUniverseConfig(this.level)
+                .then(res => {
+                    res = JSON.parse(res)
+                    for (const key in res) {
+                        this.$data[key] = res[key]
+                    }
+                })
+                .catch(e => {
+                    console.error("error in getting config")
+                })
         }
     }
 

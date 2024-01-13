@@ -2,7 +2,6 @@
 {
     public class Universe
     {
-
         public Universe(int level=1)
         {
             this.ammo = 50 + level * 5;
@@ -15,6 +14,8 @@
             this.maxMeteorNumber = 10 + level * 15;
             this.energyConsume = 0.01 * level;
             this.lifeConsume = 0.001 * level;
+
+            this.blackHole = new BlackHole(level);
         }
 
         public double ColiisionDistance { get; } = 0;
@@ -33,20 +34,30 @@
 
         public double lifeConsume { get; }
 
-        public SpaceShipSpeed SpaceShipSpeed { get; } = new SpaceShipSpeed();
+        public SpaceShipSpeed speed { get; } = new SpaceShipSpeed();
+        public BlackHole blackHole { get; }
 
     }
     public class SpaceShipSpeed
     {
         public double value{get;} = 0.15;
         public double factor {get;}= 1;
-
         public double rotateSpeed { get; } = 0.01;
         public double maxSideRotation {get;}= 0.2;
         public double minSideRotation {get;}= -0.2;
         public double maxFrontRotation{get;} = 0.2;
         public double minFrontRotation {get;}= 0.2;
         public double bulletSpeed {get;}= 0.3;
+    }
+
+    public class BlackHole
+    {
+        public BlackHole(int lv)
+        {
+            this.lifeConsume = 0.002 * lv;
+        }
+        public Boolean inBlackhole { get; } = false;
+        public double lifeConsume { get; }
     }
 }
 

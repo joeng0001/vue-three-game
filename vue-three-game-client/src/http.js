@@ -57,4 +57,7 @@ export default {
   getMarsConfig(lv) {
     return fetchFnc(`/api/Config/Mars/${lv}`);
   },
+  getUniverseConfig(lv) {
+    return fetchFnc(`/api/Config/Universe/${lv}`);
+  },
 };
