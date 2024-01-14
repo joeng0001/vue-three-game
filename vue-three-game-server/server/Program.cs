@@ -5,7 +5,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-
+using server;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -48,10 +48,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-
-
+builder.Services.AddTransient<Seed>();
 
 var app = builder.Build();
+
+
+var scopedFactory = app.Services.GetService<IServiceScopeFactory>();
+
+using (var scope = scopedFactory.CreateScope())
+{
+    var service = scope.ServiceProvider.GetService<Seed>();
+    service.SeedDataContext();
+}
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
