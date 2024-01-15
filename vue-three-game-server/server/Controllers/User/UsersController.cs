@@ -78,6 +78,11 @@ namespace server.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register([FromBody]  UserAuth req)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("incorrect body");
+            }
+
 
             var user = await _userRepository.GetUserByName(req.Username);
             if (user is not null) // userName in used
