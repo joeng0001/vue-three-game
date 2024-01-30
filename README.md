@@ -1,8 +1,12 @@
---project for learning purposes
---not completed version
+# for studying three js && .net purposes
+
 # client
+
 cd vue-three-game-client
-npm install 
+npm install
 npm run serve
 
---server side not implement
+# server
+
+// config program.cs->connectionString
+dotnet run --project server/server.csproj

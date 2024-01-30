@@ -15,5 +15,7 @@ namespace server.Model
         public byte[] password { get; set; }
 
         public byte[] salt { get; set; }
+
+        public ICollection<SpaceShipProfile> SpaceShipProfiles { get; set; }
     }
 }
