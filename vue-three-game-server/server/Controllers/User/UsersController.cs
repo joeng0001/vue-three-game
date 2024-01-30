@@ -122,7 +122,7 @@ namespace server.Controllers
             };
 
             Response.Cookies.Append("token", token, cookieOptions);
-            return Ok(token);
+            return Ok(new { id= user.Id,token=token});
         }
 
         [HttpPost("logout")]
@@ -196,6 +196,16 @@ namespace server.Controllers
             //var u2 = User.FindFirstValue(ClaimTypes.Name);
             return Ok(u);
             //return Ok(new {u,u2})
+        }
+
+        [HttpPut("addSpaceShipProfile"),Authorize]
+        public async Task<ActionResult> addSpaceShipProfile(int id, SpaceShipProfileReq s)
+        {
+            User user = await _userRepository.Get(id);
+
+            await _userRepository.AddSpaceShipProfile(user, s);
+
+            return Ok();
         }
 
     }

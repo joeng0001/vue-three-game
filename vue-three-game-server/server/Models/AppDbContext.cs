@@ -11,17 +11,17 @@ namespace server
             if (!Database.CanConnect())
             {
                 Database.EnsureCreated();
+                Database.Migrate();
             }
-
-            Database.Migrate();
+            
 
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
-         .HasMany(u => u.SpaceShipProfiles)
-         .WithOne(p => p.User)
-         .HasForeignKey(p => p.UserId);
+            .HasMany(u => u.SpaceShipProfiles)
+            .WithOne(p => p.User)
+            .HasForeignKey(p => p.UserId);
         }
 
     }

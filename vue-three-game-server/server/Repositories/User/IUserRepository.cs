@@ -15,5 +15,7 @@ namespace server.Repositories
         Task Delete(int id);
 
         Task<User> GetUserByName(string name);
+
+        Task AddSpaceShipProfile(User user, SpaceShipProfileReq s);
     }
 }
