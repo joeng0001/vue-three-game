@@ -7,7 +7,8 @@ using System.Reflection;
 using System;
 using System.Runtime.ConstrainedExecution;
 using Microsoft.AspNetCore.Authorization;
-
+using server.Repositories;
+using server.Model;
 
 namespace server.Controllers.Config
 {
@@ -16,6 +17,16 @@ namespace server.Controllers.Config
     [Authorize]
     public class ConfigController : ControllerBase
     {
+
+
+        private readonly IConfigRepository _configRepository;
+        private readonly IUserRepository _userRepository;
+
+        public ConfigController(IUserRepository userRepository, IConfigRepository configRepository)
+        {
+            _configRepository = configRepository;
+            _userRepository = userRepository;
+        }
 
         [HttpGet("Universe/{lv}")]
         public ActionResult<Universe> GetUniverseConfig(int lv)
@@ -27,6 +38,17 @@ namespace server.Controllers.Config
         public ActionResult<Mars> GetMarsConfig(int lv)
         {
             return Ok(new Mars(lv));
+        }
+
+        [HttpGet("test/{userID}/{profile_id}")]
+        public async Task<ActionResult<SpaceShipProfileRes>> getSpaceShipProfile(int userID, int profile_id)
+        {
+            User user = await _userRepository.Get(userID);
+
+            SpaceShipProfileRes s = _configRepository.GetSpaceShipProfileByID(user, profile_id);
+
+            return Ok(s);
+
         }
     }
 }

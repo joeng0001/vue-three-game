@@ -34,7 +34,15 @@ namespace server.Repositories
         }
         public async Task<User> Get(int id)
         {
-            return await _context.Users.FindAsync(id);
+            User user=await _context.Users.FindAsync(id);
+            if (user != null)
+            {
+                await _context.Entry(user)
+                    .Collection(u => u.SpaceShipProfiles)
+                    .LoadAsync();
+            }
+
+            return user;
         }
         public async Task Update(User user)
         {
@@ -47,7 +55,7 @@ namespace server.Repositories
             return await _context.Users.FirstOrDefaultAsync(e=>e.Name==name);
         }
 
-        public async Task AddSpaceShipProfile(User user, SpaceShipProfileReq s)
+        public async Task<Boolean> AddSpaceShipProfile(User user, SpaceShipProfileReq s)
         {
             var profile = new SpaceShipProfile {
                 ammo = s.ammo,
@@ -57,14 +65,21 @@ namespace server.Repositories
                 lifeConsume = s.lifeConsume,
                 UserId=user.Id
             };
+            
             if (user.SpaceShipProfiles == null)
             {
                 user.SpaceShipProfiles = new List<SpaceShipProfile>();
             }
+            if(user.SpaceShipProfiles.Count == 5)
+            {
+                return false;
+            }
+
             user.SpaceShipProfiles.Add(profile);
 
             await _context.SaveChangesAsync();
 
+            return true;
         }
     }
 }

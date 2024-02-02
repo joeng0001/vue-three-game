@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "csDanLOMff/aEY2bL/OW+/GBVCMMo2HX3u2y9u+tf1W8m4Z6RJYjHx2yUT1EmHh5ARkrjCVM0mPDpoOmcNLlYw==",
+  "dgSpecHash": "C+3gMQwl7dG5IJBZZalq6L4wQTIDZyfTIpTju0siXwvunoiz4+1NfIAg+DEOnUgAG/6YQjVLo4aPa9+OCjod7A==",
   "success": true,
   "projectFilePath": "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj",
   "expectedPackageFiles": [
@@ -93,5 +93,26 @@
     "C:\\Users\\joegg\\.nuget\\packages\\system.windows.extensions\\5.0.0\\system.windows.extensions.5.0.0.nupkg.sha512",
     "C:\\Users\\joegg\\.nuget\\packages\\zstdsharp.port\\0.7.1\\zstdsharp.port.0.7.1.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52",
+      "libraryId": "System.IdentityModel.Tokens.Jwt",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-8g9c-28fc-mcx2",
+      "libraryId": "System.IdentityModel.Tokens.Jwt",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    }
+  ]
 }

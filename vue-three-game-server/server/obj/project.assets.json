@@ -4440,11 +4440,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj",
+      "projectUniqueName": "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj",
       "projectName": "server",
-      "projectPath": "c:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj",
+      "projectPath": "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\server.csproj",
       "packagesPath": "C:\\Users\\joegg\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\obj\\",
+      "outputPath": "C:\\Users\\joegg\\OneDrive\\Desktop\\vue-three-game\\vue-three-game-server\\server\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\joegg\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -4539,8 +4539,30 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101\\RuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52",
+      "libraryId": "System.IdentityModel.Tokens.Jwt",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-8g9c-28fc-mcx2",
+      "libraryId": "System.IdentityModel.Tokens.Jwt",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    }
+  ]
 }

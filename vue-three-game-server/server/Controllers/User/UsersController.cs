@@ -29,25 +29,25 @@ namespace server.Controllers
 
         }
 
-        [HttpGet]
+        [HttpGet,Authorize]
         public async Task<IEnumerable<User>> GetUsers()
         {
             return await _userRepository.GetList();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}"), Authorize]
         public async Task<ActionResult<User>> GetUsers(int id)
         {
             return await _userRepository.Get(id);
         }
-        [HttpPost]
+        [HttpPost, Authorize]
         public async Task<ActionResult<User>> PostUsers([FromBody] User user)
         {
             var newUser = await _userRepository.Create(user);
             return CreatedAtAction(nameof(GetUsers), new { id = newUser.Id }, newUser);
         }
 
-        [HttpPut]
+        [HttpPut,Authorize]
         public async Task<ActionResult> PutUsers(int id, [FromBody] User user)
         {
             if (id != user.Id)
@@ -59,7 +59,7 @@ namespace server.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize]
 
         public async Task<ActionResult> Delete(int id)
         {
@@ -195,7 +195,6 @@ namespace server.Controllers
             var u= User?.Identity?.Name;
             //var u2 = User.FindFirstValue(ClaimTypes.Name);
             return Ok(u);
-            //return Ok(new {u,u2})
         }
 
         [HttpPut("addSpaceShipProfile"),Authorize]
@@ -203,10 +202,21 @@ namespace server.Controllers
         {
             User user = await _userRepository.Get(id);
 
-            await _userRepository.AddSpaceShipProfile(user, s);
+            var bool_res=await _userRepository.AddSpaceShipProfile(user, s);
 
-            return Ok();
+            if (bool_res)
+            {
+                return Ok("profile added");
+            }
+            else
+            {
+                return StatusCode(403, "Only 5 profiles are allowed.");
+            }
+           
         }
+
+        
+
 
     }
 }

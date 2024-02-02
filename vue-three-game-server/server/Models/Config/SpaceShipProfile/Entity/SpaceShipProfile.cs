@@ -6,6 +6,7 @@ namespace server.Model
     [Table("SpaceShipProfiles")]
     public class SpaceShipProfile
     {
+
         [Key]
         public int Id { get; set; }
 

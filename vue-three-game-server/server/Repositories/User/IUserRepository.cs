@@ -16,6 +16,6 @@ namespace server.Repositories
 
         Task<User> GetUserByName(string name);
 
-        Task AddSpaceShipProfile(User user, SpaceShipProfileReq s);
+        Task<Boolean> AddSpaceShipProfile(User user, SpaceShipProfileReq s);
     }
 }
