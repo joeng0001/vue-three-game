@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authorization;
+using System;
 
 namespace server.Controllers
 {
@@ -122,7 +123,12 @@ namespace server.Controllers
             };
 
             Response.Cookies.Append("token", token, cookieOptions);
-            return Ok(new { id= user.Id,token=token});
+            ICollection<SpaceShipProfileRes> profileRes = new List<SpaceShipProfileRes>();
+            foreach (var profile in user.SpaceShipProfiles)
+            {
+                profileRes.Add(new SpaceShipProfileRes(profile));
+            }
+            return Ok(new { id= user.Id,token=token,spaceShipProfile= profileRes });
         }
 
         [HttpPost("logout")]

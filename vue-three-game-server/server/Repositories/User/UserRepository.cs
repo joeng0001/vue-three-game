@@ -52,7 +52,14 @@ namespace server.Repositories
 
         public async Task<User> GetUserByName(string name)
         {
-            return await _context.Users.FirstOrDefaultAsync(e=>e.Name==name);
+            User user=await _context.Users.FirstOrDefaultAsync(e=>e.Name==name);
+            if (user != null)
+            {
+                await _context.Entry(user)
+                    .Collection(u => u.SpaceShipProfiles)
+                    .LoadAsync();
+            }
+            return user;
         }
 
         public async Task<Boolean> AddSpaceShipProfile(User user, SpaceShipProfileReq s)
