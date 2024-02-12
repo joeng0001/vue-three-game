@@ -1,5 +1,9 @@
 # for studying three js && .net purposes
 
+# docker
+
+    docker-compose up
+
 # client
 
 cd vue-three-game-client

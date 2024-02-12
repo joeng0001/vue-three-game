@@ -1,0 +1,25 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server
+    container_name: db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=asdCCC12ds#
+    ports:
+      - 1433:1433
+
+  client:
+    build:
+      context: ./vue-three-game-client
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+
+  server:
+    build:
+      context: ./vue-three-game-server
+    ports:
+      - 7155:7155
+    depends_on:
+      - client

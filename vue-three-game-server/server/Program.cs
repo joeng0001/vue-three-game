@@ -11,6 +11,9 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
+//for docker
+//var connectionString = "Server=db;Database=vue_game_server;User=sa;Password=asdCCC12ds#;TrustServerCertificate=true;";
+
 var connectionString = "Server=localhost;Database=vue_game_server;User ID=joe;Password=secret_pass;Trusted_Connection=Yes;TrustServerCertificate=true;";
 //builder.Services.AddTransient<MySqlConnection>(_ => new MySqlConnection(connectionString));
 
@@ -27,15 +30,15 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
-   options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-   {
-       Description = "Authorization Header using bearer (\"bearer {token}\")",
-       In = ParameterLocation.Header,
-       Name = "Authorization",
-       Type = SecuritySchemeType.ApiKey
-   });
+    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Description = "Authorization Header using bearer (\"bearer {token}\")",
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey
+    });
 
-   options.OperationFilter<SecurityRequirementsOperationFilter>();
+    options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -72,6 +75,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+
 
 app.UseCors(builder =>
 {
