@@ -1,6 +1,6 @@
 import store from "@/store.js";
 
-const endPt = "https://localhost:7155";
+const endPt = "http://localhost:5136";
 
 const fetchFnc = (path, method, data) => {
   const config = {
