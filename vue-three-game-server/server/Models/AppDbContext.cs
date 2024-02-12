@@ -20,7 +20,7 @@ namespace server
                 }
                 catch (Exception e)
                 {
-                    System.Console.WriteLine("openConnection fail");
+                    System.Console.WriteLine("waiting for db connection...");
                 }
                 Thread.Sleep(5000);
                 connected = (Database.GetDbConnection().State == System.Data.ConnectionState.Open);

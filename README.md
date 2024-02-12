@@ -2,6 +2,7 @@
 
 # docker
 
+    change program.cs connectionstring for docker
     docker-compose up
 
 # client
