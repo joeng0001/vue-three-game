@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using server;
 using System.Text.Json.Serialization;
+using server.MiddleWare;
+
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -89,6 +91,8 @@ app.UseCors(builder =>
 
 
 //app.UseHttpsRedirection();
+
+app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.UseAuthentication();
 
