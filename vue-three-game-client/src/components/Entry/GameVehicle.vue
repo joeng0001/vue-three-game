@@ -1,10 +1,44 @@
 <template>
-    <v-dialog width="800" v-model="dialog" persistent>
+    <v-dialog fullscreen v-model="dialog" persistent>
         <!--
             left show model spinning, right let user config the params of the flight(base value only, still afftect by level)
             show user pass configed profile as well
             each setting file is a record in database
         -->
+        <v-card>
+            <v-card-title class="SceneTitle">
+                config your vehicle
+            </v-card-title>
+
+            <v-card-item class="card-content">
+                <div class="d-flex">
+                    <canvas ref="vehicle" class="canvas-bg"></canvas>
+                    <v-form class="ml-1 w-100">
+                        <v-container>
+                            <v-row>
+                                <v-col cols="12">
+                                    <v-tabs bg-color="primary">
+                                        <v-tab v-for="i in [1, 2, 3, 4, 5]" :value="i">profile {{ i }}</v-tab>
+                                    </v-tabs>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12">
+                                    <v-text-field v-model="firstname" :rules="nameRules" :counter="10" label="First name"
+                                        required hide-details></v-text-field>
+                                </v-col>
+                            </v-row>
+                        </v-container>
+                    </v-form>
+                </div>
+            </v-card-item>
+
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn @click="isActive.value = false" class="mr-6">create </v-btn>
+                <v-btn @click="isActive.value = false" class="mr-6">Close </v-btn>
+            </v-card-actions>
+        </v-card>
     </v-dialog>
 </template>
 
@@ -12,14 +46,9 @@
 import * as THREE from "three"
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import earthTexture from '@/assets/img/earth.jpg'
-import marsTexture from '@/assets/img/mars.jpg'
 export default {
-
     mounted() {
-        this.initUniverseBtn()
-        this.initEarthBtn()
-        this.initMarsBtn()
+        this.initModelDisplay()
     },
     data() {
         return {
@@ -27,13 +56,13 @@ export default {
         }
     },
     methods: {
-        initUniverseBtn() {
+        initModelDisplay() {
             const gltfLoader = new GLTFLoader()
             const scene = new THREE.Scene();
-            const canvas = this.$refs.universe
+            const canvas = this.$refs.vehicle
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-            const blackholeUrl = new URL('@/assets/model/blackhole.glb', import.meta.url)
-            renderer.setSize(100, 100);
+            const spaceShipUrl = new URL('@/assets/model/spaceShip.glb', import.meta.url)
+            renderer.setSize(500, 500);
             const camera = new THREE.PerspectiveCamera(
                 45,
                 window.innerWidth / window.innerHeight,
@@ -42,96 +71,48 @@ export default {
             );
             const orbit = new OrbitControls(camera, renderer.domElement);
             const clock = new THREE.Clock();
-            camera.position.set(0, 15, 0);
+            camera.position.set(5, 5, -1);
             orbit.update();
-            const ambientLight = new THREE.AmbientLight(0x333333);
+            const ambientLight = new THREE.AmbientLight();
             scene.add(ambientLight);
 
-            let blackholeAnimation = null
-            gltfLoader.load(blackholeUrl.href, function (gltf) {
+
+
+
+
+            let modelAnimation = null
+            let spaceShip = null
+            gltfLoader.load(spaceShipUrl.href, function (gltf) {
                 const model = gltf.scene;
                 scene.add(model);
+                spaceShip = model
                 model.position.set(0, 0, 0)
 
-                blackholeAnimation = new THREE.AnimationMixer(model);
-                blackholeAnimation.timeScale = 2.0
+                modelAnimation = new THREE.AnimationMixer(model);
+                modelAnimation.timeScale = 2.0
                 const clips = gltf.animations;
 
                 // Play all animations at the same time
                 clips.forEach(function (clip) {
-                    const action = blackholeAnimation.clipAction(clip);
+                    const action = modelAnimation.clipAction(clip);
                     action.play();
                 });
 
             });
 
-            const playBlackholeAnimation = () => {
-                if (!blackholeAnimation) return
+            const playAnimation = () => {
+                if (!modelAnimation) return
                 const delta = clock.getDelta();
-                blackholeAnimation.update(delta);
-            }
-            function animate() {
-                playBlackholeAnimation()
-                renderer.render(scene, camera);
+                modelAnimation.update(delta);
             }
 
-            renderer.setAnimationLoop(animate);
-        },
-        initEarthBtn() {
-            const scene = new THREE.Scene();
-            const canvas = this.$refs.earth
-            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-            renderer.setSize(100, 100);
-            const camera = new THREE.PerspectiveCamera(
-                45,
-                window.innerWidth / window.innerHeight,
-                0.1,
-                1000
-            );
-            const orbit = new OrbitControls(camera, renderer.domElement);
-            camera.position.set(25, 25, 25);
-            orbit.update();
-            const ambientLight = new THREE.AmbientLight(0x333333);
-            scene.add(ambientLight);
-            const textureLoader = new THREE.TextureLoader();
-            const earthGeo = new THREE.SphereGeometry(16, 30, 30);
-            const earthMat = new THREE.MeshBasicMaterial({
-                map: textureLoader.load(earthTexture)
-            });
-            const earth = new THREE.Mesh(earthGeo, earthMat);
-            scene.add(earth);
-            function animate() {
-                earth.rotateY(0.004);
-                renderer.render(scene, camera);
+            const playRotation = () => {
+                if (!spaceShip) return
+                spaceShip.rotateY(0.004);
             }
-
-            renderer.setAnimationLoop(animate);
-        },
-        initMarsBtn() {
-            const scene = new THREE.Scene();
-            const canvas = this.$refs.mars
-            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-            renderer.setSize(100, 100);
-            const camera = new THREE.PerspectiveCamera(
-                45,
-                window.innerWidth / window.innerHeight,
-                0.1,
-                1000
-            );
-            const orbit = new OrbitControls(camera, renderer.domElement);
-            camera.position.set(25, 25, 25);
-            orbit.update();
-            const ambientLight = new THREE.AmbientLight(0x333333);
-            scene.add(ambientLight);
-            const textureLoader = new THREE.TextureLoader();
-            const marsGeo = new THREE.SphereGeometry(16, 30, 30);
-            const marsMat = new THREE.MeshBasicMaterial({
-                map: textureLoader.load(marsTexture)
-            });
-            const mars = new THREE.Mesh(marsGeo, marsMat);
-            scene.add(mars);
             function animate() {
-                mars.rotateY(0.008);
+                playAnimation()
+                playRotation()
                 renderer.render(scene, camera);
             }
 
@@ -143,21 +124,6 @@ export default {
 </script>
 
 <style scoped>
-.btn {
-    background-color: rgba(224, 223, 223, 0.5);
-    font-weight: 700;
-    font-size: 30px;
-}
-
-.v-btn.v-btn--density-default {
-    height: 100px;
-    width: 100px
-}
-
-.btn[data-v-55552302] {
-    background: none;
-}
-
 .SceneTitle {
     margin-bottom: 20px;
     position: relative;
@@ -167,11 +133,11 @@ export default {
     font-size: 16px;
     text-decoration: none;
     text-transform: uppercase;
+    text-align: center;
     overflow: hidden;
     transition: .5s;
     margin-top: 40px;
     letter-spacing: 4px;
-
 }
 
 .SceneTitle span {
@@ -179,92 +145,9 @@ export default {
     display: block;
 }
 
-.SceneTitle span:nth-child(1) {
-    top: 0;
-    left: -100%;
-    height: 2px;
-    width: 100%;
-    background: linear-gradient(90deg, transparent, #03e9f4);
-    animation: btn-anim1 1s linear infinite;
-}
-
-@keyframes btn-anim1 {
-    0% {
-        left: -100%;
-    }
-
-    50%,
-    100% {
-        left: 100%;
-    }
-}
-
-.SceneTitle span:nth-child(2) {
-    top: -100%;
-    right: 0;
-    width: 2px;
-    height: 100%;
-    background: linear-gradient(180deg, transparent, #03e9f4);
-    animation: btn-anim2 1s linear infinite;
-    animation-delay: .25s;
-}
-
-@keyframes btn-anim2 {
-    0% {
-        top: -100%;
-    }
-
-    50%,
-    100% {
-        top: 100%;
-    }
-}
-
-.SceneTitle span:nth-child(3) {
-    bottom: 0;
-    right: -100%;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(270deg, transparent, #03e9f4);
-    animation: btn-anim3 1s linear infinite;
-    animation-delay: .5s;
-}
-
-@keyframes btn-anim3 {
-    0% {
-        right: -100%;
-    }
-
-    50%,
-    100% {
-        right: 100%;
-    }
-}
-
-.SceneTitle span:nth-child(4) {
-    bottom: -100%;
-    left: 0;
-    width: 2px;
-    height: 100%;
-    background: linear-gradient(360deg, transparent, #03e9f4);
-    animation: btn-anim4 1s linear infinite;
-    animation-delay: .75s;
-}
-
-@keyframes btn-anim4 {
-    0% {
-        bottom: -100%;
-    }
-
-    50%,
-    100% {
-        bottom: 100%;
-    }
-}
-
-
 .v-card {
     background-color: rgba(255, 255, 255, 0);
+    color: cyan;
 }
 
 .v-card--variant-elevated {
@@ -273,5 +156,16 @@ export default {
 
 .v-dialog>.v-overlay__content>.v-card {
     box-shadow: none;
+}
+
+
+
+.card-content {
+    height: 60vh;
+    /* background-color: rgba(224, 223, 223, 0.5); */
+}
+
+.canvas-bg {
+    /*background-image: url('@/assets/img/stars.jpg');*/
 }
 </style>

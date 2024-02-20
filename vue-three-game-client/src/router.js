@@ -10,6 +10,8 @@ import Mars from "@/pages/gameScene/Mars.vue";
 
 import Login from "@/pages/Login.vue";
 
+import GameVehicle from "@/components/Entry/GameVehicle.vue";
+
 const routes = [
   {
     name: "login",
@@ -29,6 +31,11 @@ const routes = [
         name: "entry.gameLevel",
         path: "gameLevel",
         component: GameLevel,
+      },
+      {
+        name: "entry.gameVehicle",
+        path: "gameVehicle",
+        component: GameVehicle,
       },
     ],
   },
@@ -52,6 +59,7 @@ const routes = [
       },
     ],
   },
+
   {
     path: "/:catchAll(.*)",
     redirect: "/entry/gameMode",
@@ -62,14 +70,14 @@ const router = createRouter({
   routes,
 });
 router.beforeEach((to, from, next) => {
-  if (to.path === "/login") {
-    next();
-    return;
-  }
-  if (!store.state.isLogin) {
-    next({ path: "/login" });
-    return;
-  }
+  // if (to.path === "/login") {
+  //   next();
+  //   return;
+  // }
+  // if (!store.state.isLogin) {
+  //   next({ path: "/login" });
+  //   return;
+  // }
   next();
 });
 export default router;
