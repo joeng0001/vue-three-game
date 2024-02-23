@@ -10,9 +10,9 @@ namespace server.Model
         [Key]
         public int Id { get; set; }
 
-        public int oil { get; set; } = 5;
+        public int oil { get; set; } = 10;
 
-        public int energy { get; set; } = 5;
+        public int energy { get; set; } = 10;
 
         public int UserId { get; set; } // Foreign key for User
 

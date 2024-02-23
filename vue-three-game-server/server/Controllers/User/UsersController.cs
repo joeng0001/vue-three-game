@@ -30,15 +30,15 @@ namespace server.Controllers
         }
 
         [HttpGet, Authorize]
-        public async Task<IEnumerable<User>> GetUsers()
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _userRepository.GetList();
+            return Ok(await _userRepository.GetList());
         }
 
         [HttpGet("{id}"), Authorize]
         public async Task<ActionResult<User>> GetUsers(int id)
         {
-            return await _userRepository.Get(id);
+            return Ok(await _userRepository.Get(id));
         }
 
         [HttpDelete("{id}"), Authorize]
@@ -62,9 +62,8 @@ namespace server.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest("incorrect body");
+                return BadRequest("incorrect request data");
             }
-
 
             var user = await _userRepository.GetUserByName(req.Username);
             if (user is not null) // userName in used
@@ -77,6 +76,11 @@ namespace server.Controllers
             User.password = hashPassword;
             User.salt = salt;
             User = await _userRepository.Create(User);
+
+            if (User == null)
+            {
+                return StatusCode(500, "internal error,user create failed");
+            }
             //return CreatedAtAction(nameof(GetUsers), new { id = User.Id }, User.Name);
             return Ok("register success in user:" + User.Name);
         }
