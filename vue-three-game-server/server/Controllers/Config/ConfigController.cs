@@ -50,5 +50,88 @@ namespace server.Controllers.Config
             return Ok(s);
 
         }
+
+        [HttpPost("addSpaceShipProfile")]
+        public async Task<ActionResult> addSpaceShipProfile(int id, SpaceShipProfileReq s)
+        {
+            User user = await _userRepository.Get(id);
+
+            var success = await _configRepository.AddSpaceShipProfile(user, s);
+
+            if (success)
+            {
+                return Ok("profile added");
+            }
+            else
+            {
+                return StatusCode(403, "Only 5 profiles are allowed.");
+            }
+
+        }
+
+        [HttpPost("addMarsRoverProfile")]
+        public async Task<ActionResult> addMarsRoverProfile(int id, MarsRoverProfileReq s)
+        {
+            User user = await _userRepository.Get(id);
+
+            var success = await _configRepository.AddMarsRoverProfile(user, s);
+
+            if (success)
+            {
+                return Ok("profile added");
+            }
+            else
+            {
+                return StatusCode(403, "Only 5 profiles are allowed.");
+            }
+
+        }
+
+        [HttpPut("updateSpaceShipProfile")]
+        public async Task<ActionResult> updateSpaceShipProfile(int UserId, int ProfileId,SpaceShipProfileReq s)
+        {
+            User user = await _userRepository.Get(UserId);
+
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            var success = await _configRepository.UpdateSpaceShipProfile(user, ProfileId, s);
+
+            if (success)
+            {
+                return Ok("profile updated");
+            }
+            else
+            {
+                return StatusCode(403,"update forbidded");
+            }
+
+        }
+
+
+        [HttpPut("updateMarsRoverProfile")]
+        public async Task<ActionResult> updateMarsRoverProfile(int UserId, int ProfileId, MarsRoverProfileReq s)
+        {
+            User user = await _userRepository.Get(UserId);
+
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            var success = await _configRepository.UpdateMarsRoverProfile(user, ProfileId, s);
+
+            if (success)
+            {
+                return Ok("profile updated");
+            }
+            else
+            {
+                return StatusCode(403, "update forbidded");
+            }
+
+        }
     }
 }

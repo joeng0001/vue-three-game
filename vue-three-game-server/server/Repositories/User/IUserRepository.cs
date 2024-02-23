@@ -10,12 +10,8 @@ namespace server.Repositories
 
         Task<User> Create(User user);
 
-        Task Update(User user);
-
         Task Delete(int id);
 
         Task<User> GetUserByName(string name);
-
-        Task<Boolean> AddSpaceShipProfile(User user, SpaceShipProfileReq s);
     }
 }

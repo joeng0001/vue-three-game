@@ -1,16 +1,16 @@
 import { createWebHistory, createRouter } from "vue-router";
-import Entry from "@/pages/Entry.vue";
+import Entry from "@/pages/Entry/Entry.vue";
 import store from "@/store";
 
-import GameMode from "@/components/Entry/GameMode.vue";
-import GameLevel from "@/components/Entry/GameLevel.vue";
+import GameMode from "@/pages/Entry/GameMode.vue";
+import GameLevel from "@/pages/Entry/GameLevel.vue";
 import Universe from "@/pages/gameScene/Universe.vue";
 import Earth from "@/pages/gameScene/Earth.vue";
 import Mars from "@/pages/gameScene/Mars.vue";
 
 import Login from "@/pages/Login.vue";
 
-import GameVehicle from "@/components/Entry/GameVehicle.vue";
+import GameVehicle from "@/pages/Entry/GameVehicle.vue";
 
 const routes = [
   {

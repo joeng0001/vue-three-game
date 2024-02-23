@@ -2,7 +2,6 @@
     <div>
         <canvas ref="three"></canvas>
         <router-view></router-view>
-
     </div>
 </template>
 

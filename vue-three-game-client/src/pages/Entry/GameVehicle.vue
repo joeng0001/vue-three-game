@@ -76,10 +76,6 @@ export default {
             const ambientLight = new THREE.AmbientLight();
             scene.add(ambientLight);
 
-
-
-
-
             let modelAnimation = null
             let spaceShip = null
             gltfLoader.load(spaceShipUrl.href, function (gltf) {
@@ -92,7 +88,6 @@ export default {
                 modelAnimation.timeScale = 2.0
                 const clips = gltf.animations;
 
-                // Play all animations at the same time
                 clips.forEach(function (clip) {
                     const action = modelAnimation.clipAction(clip);
                     action.play();

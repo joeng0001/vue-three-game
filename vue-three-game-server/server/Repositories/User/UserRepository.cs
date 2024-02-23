@@ -2,6 +2,7 @@
 using server.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Metadata.Ecma335;
 
 namespace server.Repositories
 {
@@ -30,7 +31,10 @@ namespace server.Repositories
         }
         public async Task<IEnumerable<User>> GetList()
         {
-            return await _context.Users.Include(u => u.SpaceShipProfiles).ToListAsync();
+            return await _context.Users
+                .Include(u => u.SpaceShipProfiles)
+                .Include(u => u.MarsRoverProfiles)
+                .ToListAsync();
         }
         public async Task<User> Get(int id)
         {
@@ -40,14 +44,12 @@ namespace server.Repositories
                 await _context.Entry(user)
                     .Collection(u => u.SpaceShipProfiles)
                     .LoadAsync();
+                await _context.Entry(user)
+                    .Collection(u => u.MarsRoverProfiles)
+                    .LoadAsync();
             }
 
             return user;
-        }
-        public async Task Update(User user)
-        {
-            _context.Entry(user).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
         }
 
         public async Task<User> GetUserByName(string name)
@@ -58,35 +60,14 @@ namespace server.Repositories
                 await _context.Entry(user)
                     .Collection(u => u.SpaceShipProfiles)
                     .LoadAsync();
+
+                await _context.Entry(user)
+                    .Collection(u => u.MarsRoverProfiles)
+                    .LoadAsync();
             }
             return user;
         }
 
-        public async Task<Boolean> AddSpaceShipProfile(User user, SpaceShipProfileReq s)
-        {
-            var profile = new SpaceShipProfile {
-                ammo = s.ammo,
-                life = s.life,
-                energy = s.energy,
-                energyConsume = s.energyConsume,
-                lifeConsume = s.lifeConsume,
-                UserId=user.Id
-            };
-            
-            if (user.SpaceShipProfiles == null)
-            {
-                user.SpaceShipProfiles = new List<SpaceShipProfile>();
-            }
-            if(user.SpaceShipProfiles.Count == 5)
-            {
-                return false;
-            }
-
-            user.SpaceShipProfiles.Add(profile);
-
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
+        
     }
 }

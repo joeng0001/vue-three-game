@@ -33,5 +33,88 @@ namespace server.Repositories
                 return null;
             }
         }
+
+        public async Task<Boolean> AddSpaceShipProfile(User user, SpaceShipProfileReq s)
+        {
+            var profile = new SpaceShipProfile
+            {
+                ammo = s.ammo,
+                life = s.life,
+                energy = s.energy,
+                energyConsume = s.energyConsume,
+                lifeConsume = s.lifeConsume,
+                UserId = user.Id
+            };
+
+            if (user.SpaceShipProfiles == null)
+            {
+                user.SpaceShipProfiles = new List<SpaceShipProfile>();
+            }
+            if (user.SpaceShipProfiles.Count == 5)
+            {
+                return false;
+            }
+
+            user.SpaceShipProfiles.Add(profile);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<Boolean> AddMarsRoverProfile(User user, MarsRoverProfileReq s)
+        {
+            var profile = new MarsRoverProfile
+            {
+                oil = s.oil,
+                energy = s.energy,
+                UserId = user.Id
+            };
+
+            if (user.MarsRoverProfiles == null)
+            {
+                user.MarsRoverProfiles = new List<MarsRoverProfile>();
+            }
+            if (user.MarsRoverProfiles.Count == 5)
+            {
+                return false;
+            }
+
+            user.MarsRoverProfiles.Add(profile);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+
+        public async Task<Boolean> UpdateSpaceShipProfile(User user, int profileID, SpaceShipProfileReq s)
+        {
+
+            var profile = user.SpaceShipProfiles.FirstOrDefault(prof => prof.Id == profileID);
+            if (profile != null)
+            {
+                profile.life = s.life;
+                profile.ammo = s.ammo;
+                profile.energy = s.energy;
+                profile.energyConsume=s.energyConsume;
+                profile.lifeConsume=s.lifeConsume;
+                await _context.SaveChangesAsync();
+            }
+            return true;
+        }
+
+        public async Task<Boolean> UpdateMarsRoverProfile(User user, int profileID, MarsRoverProfileReq s)
+        {
+
+            var profile = user.MarsRoverProfiles.FirstOrDefault(prof => prof.Id == profileID);
+            if (profile != null)
+            {
+                profile.energy = s.energy;
+                profile.oil = s.oil;
+                await _context.SaveChangesAsync();
+            }
+            return true;
+        }
     }
 }

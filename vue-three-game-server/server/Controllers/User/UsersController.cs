@@ -23,14 +23,13 @@ namespace server.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
 
-        public UsersController(IUserRepository userRepository,IConfiguration configuration)
+        public UsersController(IUserRepository userRepository, IConfiguration configuration)
         {
             _userRepository = userRepository;
-            _configuration=configuration;
-
+            _configuration = configuration;
         }
 
-        [HttpGet,Authorize]
+        [HttpGet, Authorize]
         public async Task<IEnumerable<User>> GetUsers()
         {
             return await _userRepository.GetList();
@@ -40,24 +39,6 @@ namespace server.Controllers
         public async Task<ActionResult<User>> GetUsers(int id)
         {
             return await _userRepository.Get(id);
-        }
-        [HttpPost, Authorize]
-        public async Task<ActionResult<User>> PostUsers([FromBody] User user)
-        {
-            var newUser = await _userRepository.Create(user);
-            return CreatedAtAction(nameof(GetUsers), new { id = newUser.Id }, newUser);
-        }
-
-        [HttpPut,Authorize]
-        public async Task<ActionResult> PutUsers(int id, [FromBody] User user)
-        {
-            if (id != user.Id)
-            {
-                return BadRequest();
-            }
-
-            await _userRepository.Update(user);
-            return NoContent();
         }
 
         [HttpDelete("{id}"), Authorize]
@@ -77,7 +58,7 @@ namespace server.Controllers
 
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register([FromBody]  UserAuth req)
+        public async Task<ActionResult<String>> Register([FromBody] UserAuth req)
         {
             if (!ModelState.IsValid)
             {
@@ -95,13 +76,13 @@ namespace server.Controllers
             User.Name = req.Username;
             User.password = hashPassword;
             User.salt = salt;
-            User=await _userRepository.Create(User);
+            User = await _userRepository.Create(User);
             //return CreatedAtAction(nameof(GetUsers), new { id = User.Id }, User.Name);
-            return Ok("register success");
+            return Ok("register success in user:" + User.Name);
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login([FromBody]  UserAuth req)
+        public async Task<ActionResult<LoginRes>> Login([FromBody]  UserAuth req)
         {
             var user=await _userRepository.GetUserByName(req.Username);
             if (user is null) // userName not found
@@ -123,12 +104,7 @@ namespace server.Controllers
             };
 
             Response.Cookies.Append("token", token, cookieOptions);
-            ICollection<SpaceShipProfileRes> profileRes = new List<SpaceShipProfileRes>();
-            foreach (var profile in user.SpaceShipProfiles)
-            {
-                profileRes.Add(new SpaceShipProfileRes(profile));
-            }
-            return Ok(new { id= user.Id,token=token,spaceShipProfile= profileRes });
+            return Ok(new LoginRes(user,token));
         }
 
         [HttpPost("logout")]
@@ -193,36 +169,5 @@ namespace server.Controllers
             var jwt=new JwtSecurityTokenHandler().WriteToken(token);
             return jwt;
         }
-
-
-        [HttpGet("getUserNameFromToken"),Authorize]
-        public async Task<ActionResult<string>> getUserNameFromToken()
-        {
-            var u= User?.Identity?.Name;
-            //var u2 = User.FindFirstValue(ClaimTypes.Name);
-            return Ok(u);
-        }
-
-        [HttpPut("addSpaceShipProfile"),Authorize]
-        public async Task<ActionResult> addSpaceShipProfile(int id, SpaceShipProfileReq s)
-        {
-            User user = await _userRepository.Get(id);
-
-            var bool_res=await _userRepository.AddSpaceShipProfile(user, s);
-
-            if (bool_res)
-            {
-                return Ok("profile added");
-            }
-            else
-            {
-                return StatusCode(403, "Only 5 profiles are allowed.");
-            }
-           
-        }
-
-        
-
-
     }
 }
