@@ -54,7 +54,7 @@ namespace server.Controllers.Config
         [HttpPost("addSpaceShipProfile")]
         public async Task<ActionResult> addSpaceShipProfile(int id, SpaceShipProfileReq s)
         {
-            if(s.ammo>50 || s.ammo < 0 ||
+            if(s.ammo > 50 || s.ammo < 0 ||
                 s.energy>50 || s.energy<0||
                 s.life>60 || s.life<0 ||
                 s.energyConsume > 0.01 || s.energyConsume< 0.001 ||

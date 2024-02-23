@@ -81,8 +81,8 @@ namespace server.Controllers
             {
                 return StatusCode(500, "internal error,user create failed");
             }
-            //return CreatedAtAction(nameof(GetUsers), new { id = User.Id }, User.Name);
-            return Ok("register success in user:" + User.Name);
+
+            return CreatedAtAction(nameof(GetUsers),new { id=User.Id},"register success, " + User.Name);
         }
 
         [HttpPost("login")]
