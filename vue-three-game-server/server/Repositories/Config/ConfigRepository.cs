@@ -34,6 +34,8 @@ namespace server.Repositories
             }
         }
 
+
+
         public async Task<Boolean> AddSpaceShipProfile(User user, SpaceShipProfileReq s)
         {
             var profile = new SpaceShipProfile
@@ -90,18 +92,20 @@ namespace server.Repositories
 
         public async Task<Boolean> UpdateSpaceShipProfile(User user, int profileID, SpaceShipProfileReq s)
         {
-
             var profile = user.SpaceShipProfiles.FirstOrDefault(prof => prof.Id == profileID);
+            
             if (profile != null)
             {
+                System.Console.WriteLine("find profile!");
                 profile.life = s.life;
                 profile.ammo = s.ammo;
                 profile.energy = s.energy;
                 profile.energyConsume=s.energyConsume;
                 profile.lifeConsume=s.lifeConsume;
                 await _context.SaveChangesAsync();
+                return true;
             }
-            return true;
+            return false;
         }
 
         public async Task<Boolean> UpdateMarsRoverProfile(User user, int profileID, MarsRoverProfileReq s)
@@ -115,6 +119,43 @@ namespace server.Repositories
                 await _context.SaveChangesAsync();
             }
             return true;
+        }
+
+
+        public ICollection<SpaceShipProfileRes> GetSpaceShipProfiles(User user)
+        {
+
+            if (user.SpaceShipProfiles == null)
+            {
+                user.SpaceShipProfiles = new List<SpaceShipProfile>();
+            }
+
+            ICollection <SpaceShipProfileRes> list = new List<SpaceShipProfileRes>();
+
+            foreach (SpaceShipProfile obj in user.SpaceShipProfiles)
+            {
+
+                list.Add(new SpaceShipProfileRes(obj));
+            }
+            return list;
+        }
+
+        public ICollection<MarsRoverProfileRes> GetMarsRoverProfiles(User user)
+        {
+
+            if (user.MarsRoverProfiles == null)
+            {
+                user.MarsRoverProfiles = new List<MarsRoverProfile>();
+            }
+
+            ICollection<MarsRoverProfileRes> list = new List<MarsRoverProfileRes>();
+
+            foreach (MarsRoverProfile obj in user.MarsRoverProfiles)
+            {
+
+                list.Add(new MarsRoverProfileRes(obj));
+            }
+            return list;
         }
     }
 }

@@ -1,44 +1,140 @@
 <template>
     <v-dialog fullscreen v-model="dialog" persistent>
-        <!--
-            left show model spinning, right let user config the params of the flight(base value only, still afftect by level)
-            show user pass configed profile as well
-            each setting file is a record in database
-        -->
-        <v-card>
-            <v-card-title class="SceneTitle">
-                config your vehicle
-            </v-card-title>
+        <v-form class="ml-1 w-100" @submit.prevent="submitProfile">
+            <v-card>
+                <v-card-title class="SceneTitle">
+                    config your vehicle
+                </v-card-title>
 
-            <v-card-item class="card-content">
-                <div class="d-flex">
-                    <canvas ref="vehicle" class="canvas-bg"></canvas>
-                    <v-form class="ml-1 w-100">
+                <v-card-item class="card-content">
+                    <div class="d-flex">
+                        <canvas ref="vehicle" class="canvas-bg"></canvas>
+
                         <v-container>
                             <v-row>
+                                <v-progress-linear indeterminate color="yellow-darken-2"
+                                    v-show="loading"></v-progress-linear>
                                 <v-col cols="12">
-                                    <v-tabs bg-color="primary">
-                                        <v-tab v-for="i in [1, 2, 3, 4, 5]" :value="i">profile {{ i }}</v-tab>
+                                    <v-tabs bg-color="primary" v-model="profile_index">
+                                        <v-tab v-for="(_, i) in profile_list" :value="i">profile {{ i + 1 }}</v-tab>
                                     </v-tabs>
-                                </v-col>
-                            </v-row>
-                            <v-row>
-                                <v-col cols="12">
-                                    <v-text-field v-model="firstname" :rules="nameRules" :counter="10" label="First name"
-                                        required hide-details></v-text-field>
-                                </v-col>
-                            </v-row>
-                        </v-container>
-                    </v-form>
-                </div>
-            </v-card-item>
 
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn @click="isActive.value = false" class="mr-6">create </v-btn>
-                <v-btn @click="isActive.value = false" class="mr-6">Close </v-btn>
-            </v-card-actions>
-        </v-card>
+                                </v-col>
+                            </v-row>
+                            <div v-if="$route.query.scene = 'Universe'">
+                                <v-row>
+                                    <v-col cols="2">
+                                        Ammo
+                                    </v-col>
+                                    <v-col cols="9">
+                                        <v-slider min="0" max="50" :step="1" name="ammo"
+                                            v-model="profile_list[profile_index].ammo" />
+                                    </v-col>
+                                    <v-col cols="1">
+                                        {{ profile_list[profile_index].ammo }}
+                                    </v-col>
+                                </v-row>
+                                <v-row>
+                                    <v-col cols="2">
+                                        Energy
+                                    </v-col>
+                                    <v-col cols="9">
+                                        <v-slider min="0" max="50" :step="1" name="energy"
+                                            v-model="profile_list[profile_index].energy" />
+                                    </v-col>
+                                    <v-col cols="1">
+                                        {{ profile_list[profile_index].energy }}
+                                    </v-col>
+                                </v-row>
+                                <v-row>
+                                    <v-col cols="2">
+                                        Life
+                                    </v-col>
+                                    <v-col cols="9">
+                                        <v-slider min="0" max="60" :step="1" name="life"
+                                            v-model="profile_list[profile_index].life" />
+                                    </v-col>
+                                    <v-col cols="1">
+                                        {{ profile_list[profile_index].life }}
+                                    </v-col>
+                                </v-row>
+                                <v-row>
+                                    <v-col cols="2">
+                                        Energy consumption
+                                    </v-col>
+                                    <v-col cols="9">
+                                        <v-slider min="0" max="0.001" :step="0.0001" name="energyConsume"
+                                            v-model="profile_list[profile_index].energyConsume" />
+                                    </v-col>
+                                    <v-col cols="1">
+                                        {{ profile_list[profile_index].energyConsume }}
+                                    </v-col>
+                                </v-row>
+                                <v-row>
+                                    <v-col cols="2">
+                                        Life consumption
+                                    </v-col>
+                                    <v-col cols="9">
+                                        <v-slider min="0" max="0.0001" :step="0.00001" name="lifeConsume"
+                                            v-model="profile_list[profile_index].lifeConsume" />
+                                    </v-col>
+                                    <v-col cols="1">
+                                        {{ profile_list[profile_index].lifeConsume }}
+                                    </v-col>
+                                </v-row>
+                            </div>
+                            <div v-else>
+                                <v-row>
+                                    <v-col cols="2">
+                                        Ammo
+                                    </v-col>
+                                    <v-col cols="9">
+                                        <v-slider min="0" max="10" :step="1" name="ammo"
+                                            v-model="profile_list[profile_index].oil" />
+                                    </v-col>
+                                    <v-col cols="1">
+                                        {{ profile_list[profile_index].oil }}
+                                    </v-col>
+                                </v-row>
+                                <v-row>
+                                    <v-col cols="2">
+                                        Energy
+                                    </v-col>
+                                    <v-col cols="9">
+                                        <v-slider min="0" max="10" :step="1" name="energy"
+                                            v-model="profile_list[profile_index].energy" />
+                                    </v-col>
+                                    <v-col cols="1">
+                                        {{ profile_list[profile_index].energy }}
+                                    </v-col>
+                                </v-row>
+                            </div>
+                        </v-container>
+
+                    </div>
+                </v-card-item>
+
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn v-if="profile_index != profile_list.length - 1 || no_more_profile"
+                        @click="() => $router.push(`/gameScene/${$route.query.scene}?level=${$route.query.level}&profileID=${profile_list[profile_index].id}`)"
+                        class="mr-6">Start</v-btn>
+                    <v-btn class="mr-6" v-if="profile_index == profile_list.length - 1 && !no_more_profile"
+                        type="submit">create</v-btn>
+                    <v-btn class="mr-6" v-else type="submit">update</v-btn>
+                    <v-btn @click="() => $router.push(`/entry/gameLevel?scene=${$route.query.scene}`)" class="mr-6">Back
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-form>
+        <v-snackbar v-model="snackbar.open" :color="snackbar.color">
+            {{ snackbar.text }}
+            <template v-slot:actions>
+                <v-btn color="red" variant="text" @click="snackbar.open = false">
+                    Close
+                </v-btn>
+            </template>
+        </v-snackbar>
     </v-dialog>
 </template>
 
@@ -46,14 +142,29 @@
 import * as THREE from "three"
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import store from "@/store"
+import http from "@/http";
 export default {
     mounted() {
         this.initModelDisplay()
     },
     data() {
         return {
-            dialog: true
+            dialog: true,
+            profile_index: 0,
+            profile_list: [],
+            profile_template: {},
+            no_more_profile: false,
+            snackbar: {
+                open: false,
+                text: "",
+                color: "blue-grey"
+            },
+            loading: false
         }
+    },
+    created() {
+        this.initProfileList()
     },
     methods: {
         initModelDisplay() {
@@ -112,6 +223,95 @@ export default {
             }
 
             renderer.setAnimationLoop(animate);
+        },
+        initProfileList() {
+            if (this.$route.query.scene == "Universe") {
+                this.profile_list = JSON.parse(JSON.stringify(store.state.spaceShipProfile))
+                this.profile_template = {
+                    ammo: 0,
+                    energy: 0,
+                    life: 0,
+                    lifeConsume: 0,
+                    energyConsume: 0
+                }
+
+            } else if (this.$route.query.scene == "Mars") {
+                this.profile_list = JSON.parse(JSON.stringify(store.state.marsRoverProfile))
+                this.profile_template = {
+                    oil: 0,
+                    energy: 0,
+                }
+            }
+
+            if (this.profile_list.length != 5) {
+                this.profile_list.push(this.profile_template)
+            } else {
+                this.no_more_profile = true
+            }
+        },
+        submitProfile() {
+            this.loading = true
+            const Func = () => {
+                if (this.profile_index == this.profile_list.length - 1 && !this.no_more_profile) {
+                    return (this.$route.query.scene == "Universe" ?
+                        http.addSpaceShipProfile(store.state.userID, this.profile_list[this.profile_index]) :
+                        http.addMarsRoverProfile(store.state.userID, this.profile_list[this.profile_index]))
+                } else {
+                    return (this.$route.query.scene == "Universe" ?
+                        http.updateSpaceShipProfile(store.state.userID, this.profile_list[this.profile_index].id, this.profile_list[this.profile_index]) :
+                        http.updateMarsRoverProfile(store.state.userID, this.profile_list[this.profile_index].id, this.profile_list[this.profile_index]))
+                }
+            }
+
+            console.log(store.state.userID, this.profile_list[this.profile_index].id, this.profile_list[this.profile_index])
+            Func()
+                .then(async res => {
+                    await this.refetchProfile()
+                    this.snackbar = {
+                        open: true,
+                        text: res,
+                        color: "light-green"
+                    }
+                })
+                .catch(res => {
+                    this.snackbar = {
+                        open: true,
+                        text: res,
+                        color: "pink"
+                    }
+                }).finally(_ => {
+                    this.loading = false
+                })
+
+        },
+        async refetchProfile() {
+            if (this.$route.query.scene == "Universe") {
+                await http.getSpaceShipProfile(store.state.userID).then(async res => {
+                    res = JSON.parse(res)
+                    console.log(res)
+                    await this.$store.dispatch('setSpaceShipProfile', res)
+                    this.initProfileList()
+                }).catch(res => {
+                    this.snackbar = {
+                        open: true,
+                        text: res,
+                        color: "pink"
+                    }
+                })
+            } else {
+                await http.getMarsRoverProfile(store.state.userID).then(async res => {
+                    res = JSON.parse(res)
+                    console.log(res)
+                    await this.$store.dispatch('setMarsRoverProfile', res)
+                    this.initProfileList()
+                }).catch(res => {
+                    this.snackbar = {
+                        open: true,
+                        text: res,
+                        color: "pink"
+                    }
+                })
+            }
         }
     }
 }

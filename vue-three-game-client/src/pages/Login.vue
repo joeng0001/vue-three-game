@@ -52,9 +52,13 @@ export default {
         login() {
             this.loading = true
             http.login({ Username: this.user.name, Password: this.user.password })
-                .then(_ => {
+                .then(res => {
+                    res = JSON.parse(res)
                     this.controlAlert(true, "success", "login success", 3000)
                     this.$store.dispatch('setLoginStatus', true)
+                    this.$store.dispatch('setUserID', res.id)
+                    this.$store.dispatch('setSpaceShipProfile', res.spaceShipProfile)
+                    this.$store.dispatch('setMarsRoverProfile', res.marsRoverProfile)
                     this.$router.push({ name: 'entry.gameMode' })
                 }).catch(err => {
                     this.controlAlert(true, "error", err)

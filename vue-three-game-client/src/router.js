@@ -1,16 +1,17 @@
 import { createWebHistory, createRouter } from "vue-router";
 import Entry from "@/pages/Entry/Entry.vue";
+import GameScene from "@/pages/gameScene/GameScene.vue";
 import store from "@/store";
 
 import GameMode from "@/pages/Entry/GameMode.vue";
 import GameLevel from "@/pages/Entry/GameLevel.vue";
+import GameVehicle from "@/pages/Entry/GameVehicle.vue";
+
 import Universe from "@/pages/gameScene/Universe.vue";
 import Earth from "@/pages/gameScene/Earth.vue";
 import Mars from "@/pages/gameScene/Mars.vue";
 
 import Login from "@/pages/Login.vue";
-
-import GameVehicle from "@/pages/Entry/GameVehicle.vue";
 
 const routes = [
   {
@@ -41,6 +42,7 @@ const routes = [
   },
   {
     path: "/gameScene",
+    component: GameScene,
     children: [
       {
         name: "scene.Universe",
@@ -70,14 +72,14 @@ const router = createRouter({
   routes,
 });
 router.beforeEach((to, from, next) => {
-  // if (to.path === "/login") {
-  //   next();
-  //   return;
-  // }
-  // if (!store.state.isLogin) {
-  //   next({ path: "/login" });
-  //   return;
-  // }
+  if (to.path === "/login") {
+    next();
+    return;
+  }
+  if (!store.state.isLogin) {
+    next({ path: "/login" });
+    return;
+  }
   next();
 });
 export default router;

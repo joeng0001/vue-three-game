@@ -13,43 +13,20 @@
             <v-card-actions class="d-flex justify-space-between mt-4">
                 <v-container>
                     <v-row>
-                        <v-col cols="3">
-                            <v-btn class="btn" style="color:Aquamarine;"
-                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=1`)">1</v-btn>
-                        </v-col>
-                        <v-col cols="3">
-                            <v-btn class="btn" style="color:GreenYellow;"
-                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=2`)">2</v-btn>
-                        </v-col>
-                        <v-col cols="3">
-                            <v-btn class="btn" style="color:DeepSkyBlue;"
-                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=3`)">3</v-btn>
-                        </v-col>
-                        <v-col cols="3">
-                            <v-btn class="btn" style="color:Lime;"
-                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=4`)">4</v-btn>
-                        </v-col>
-                        <v-col cols="3">
-                            <v-btn class="btn" style="color:Crimson;"
-                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=5`)">5</v-btn>
-                        </v-col>
-                        <v-col cols="3">
-                            <v-btn class="btn" style="color:darkred;"
-                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=6`)">6</v-btn>
-                        </v-col>
-                        <v-col cols="3">
-                            <v-btn class="btn" style="color:DeepPink;"
-                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=7`)">7</v-btn>
-                        </v-col>
-                        <v-col cols="3">
-                            <v-btn class="btn" style="color:magenta;"
-                                @click="() => $router.push(`/gameScene/${$route.query.scene}?level=8`)">8</v-btn>
+                        <v-col cols="3" v-for="(color, i) in color_list">
+                            <v-btn class="btn" :style="{ color: color }"
+                                @click="() => $router.push(`/entry/gameVehicle?scene=${$route.query.scene}&level=${i + 1}`)">{{
+                                    i + 1
+                                }}</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>
-
-
             </v-card-actions>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn @click="() => $router.push({ name: 'entry.gameMode' })" class="mr-6 back_btn">Back </v-btn>
+            </v-card-actions>
+
         </v-card>
     </v-dialog>
 </template>
@@ -59,7 +36,17 @@
 export default {
     data() {
         return {
-            dialog: true
+            dialog: true,
+            color_list: [
+                "Aquamarine",
+                "GreenYellow",
+                "DeepSkyBlue",
+                "Lime",
+                "Crimson",
+                "darkred",
+                "DeepPink",
+                "magenta"
+            ]
         }
     }
 }
@@ -188,5 +175,10 @@ export default {
 
 .v-dialog>.v-overlay__content>.v-card {
     box-shadow: none;
+}
+
+.back_btn {
+    background-color: rgba(255, 255, 255, 0);
+    color: cyan;
 }
 </style>

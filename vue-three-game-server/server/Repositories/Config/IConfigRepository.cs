@@ -14,5 +14,9 @@ namespace server.Repositories
         Task<Boolean> UpdateSpaceShipProfile(User user, int profileID, SpaceShipProfileReq s);
 
         Task<Boolean> UpdateMarsRoverProfile(User user, int profileID, MarsRoverProfileReq s);
+
+        ICollection<SpaceShipProfileRes> GetSpaceShipProfiles(User user);
+
+        ICollection<MarsRoverProfileRes> GetMarsRoverProfiles(User user);
     }
 }

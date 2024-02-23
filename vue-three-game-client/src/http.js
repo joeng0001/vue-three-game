@@ -54,10 +54,39 @@ export default {
   login(data) {
     return fetchFnc("/api/Users/login", "POST", data);
   },
+  logout() {
+    return fetchFnc("/api/Users/logout", "POST", {});
+  },
   getMarsConfig(lv) {
     return fetchFnc(`/api/Config/Mars/${lv}`);
   },
   getUniverseConfig(lv) {
     return fetchFnc(`/api/Config/Universe/${lv}`);
+  },
+  addSpaceShipProfile(userId, data) {
+    return fetchFnc("/api/Config/addSpaceShipProfile/" + userId, "POST", data);
+  },
+  addMarsRoverProfile(userId, data) {
+    return fetchFnc("/api/Config/addMarsRoverProfile/" + userId, "POST", data);
+  },
+  updateSpaceShipProfile(userId, profileId, data) {
+    return fetchFnc(
+      `/api/Config/updateSpaceShipProfile/${userId}/${profileId}`,
+      "PUT",
+      data
+    );
+  },
+  updateMarsRoverProfile(userId, profileId, data) {
+    return fetchFnc(
+      `/api/Config/updateMarsRoverProfile/${userId}/${profileId}`,
+      "PUT",
+      data
+    );
+  },
+  getSpaceShipProfile(userId) {
+    return fetchFnc("/api/Config/getSpaceShipProfile/" + userId);
+  },
+  getMarsRoverProfile(userId) {
+    return fetchFnc("/api/Config/getMarsRoverProfile/" + userId);
   },
 };

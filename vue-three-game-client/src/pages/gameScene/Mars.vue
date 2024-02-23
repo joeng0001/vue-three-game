@@ -1,7 +1,6 @@
 <template>
     <Loading v-show="!loadDone" />
 
-
     <div v-show="loadDone">
         <canvas ref="three"></canvas>
         <div class="scorePanel">
