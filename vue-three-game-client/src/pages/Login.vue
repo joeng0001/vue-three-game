@@ -1,7 +1,6 @@
 <template>
     <div class="wrapper">
         <canvas ref="three" class="canvas"></canvas>
-        <div>hahahaha</div>
         <v-card class="card" :loading="loading">
             <v-card-title>
                 <v-tabs v-model="page" bg-color="primary">

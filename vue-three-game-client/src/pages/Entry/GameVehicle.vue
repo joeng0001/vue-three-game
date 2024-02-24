@@ -117,7 +117,7 @@
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn v-if="profile_index != profile_list.length - 1 || no_more_profile"
-                        @click="() => $router.push(`/gameScene/${$route.query.scene}?level=${$route.query.level}&profileID=${profile_list[profile_index].id}`)"
+                        @click="() => $router.push(`/gameScene/${$route.query.scene}?level=${$route.query.level}&profileID=${profile_list[profile_index].id}&scene=${$route.query.scene}`)"
                         class="mr-6">Start</v-btn>
                     <v-btn class="mr-6" v-if="profile_index == profile_list.length - 1 && !no_more_profile"
                         type="submit">create</v-btn>
