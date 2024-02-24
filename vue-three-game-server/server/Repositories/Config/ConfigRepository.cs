@@ -34,6 +34,25 @@ namespace server.Repositories
             }
         }
 
+        public MarsRoverProfileRes GetMarsRoverProfileByID(User user, int id)
+        {
+
+            if (user.MarsRoverProfiles == null)
+            {
+                user.MarsRoverProfiles = new List<MarsRoverProfile>();
+            }
+            MarsRoverProfile s = user.MarsRoverProfiles.FirstOrDefault(p => p.Id == id);
+
+            if (s != null)
+            {
+                return new MarsRoverProfileRes(s);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
 
 
         public async Task<Boolean> AddSpaceShipProfile(User user, SpaceShipProfileReq s)

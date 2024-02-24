@@ -1,15 +1,17 @@
-﻿namespace server.Models.Config.Mars
+﻿using server.Model;
+
+namespace server.Models.Config.Mars
 {
     public class Mars
     {
-        public Mars(int level=1)
+        public Mars(MarsRoverProfileRes profile,int level=1)
         {
             this.maxScore = 5+ 2 * level;
-
-            this.oil = this.maxOil= 10 - level;
-            this.energy = this.maxEnergy= 10 - level;
-
             this.numOfRock = 20 + level * 3;
+
+            this.oil = this.maxOil = profile != null ? profile.oil : 10-level;
+            this.energy=this.maxEnergy= profile != null ? profile.energy : 10 - level;
+          
         }
 
         public int score { get; } = 0;

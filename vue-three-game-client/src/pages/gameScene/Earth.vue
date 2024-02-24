@@ -9,14 +9,12 @@ import * as THREE from 'three'
 import Stats from 'three/examples/jsm/libs/stats.module'
 import { GUI } from 'dat.gui'
 import * as CANNON from 'cannon-es'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import earthTexture from '@/assets/img/earth.jpg';
-
 
 export default {
     data() {
         return {
-            datGUI: null
+            datGUI: null,
+            renderer: null
         }
     },
     mounted() {
@@ -25,6 +23,9 @@ export default {
     beforeUnmount() {
         if (this.datGUI) {
             this.datGUI.destroy()
+        }
+        if (this.renderer) {
+            renderer.setAnimationLoop(null);
         }
     },
     methods: {
@@ -64,6 +65,7 @@ export default {
             const renderer = new THREE.WebGLRenderer({
                 canvas
             })
+            this.renderer = renderer
             renderer.setSize(window.innerWidth, window.innerHeight)
             renderer.shadowMap.enabled = true
             renderer.shadowMap.type = THREE.PCFSoftShadowMap

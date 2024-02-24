@@ -1,6 +1,7 @@
 <template>
     <div class="wrapper">
         <canvas ref="three" class="canvas"></canvas>
+        <div>hahahaha</div>
         <v-card class="card" :loading="loading">
             <v-card-title>
                 <v-tabs v-model="page" bg-color="primary">
@@ -42,11 +43,17 @@ export default {
                 msg: ""
             },
             loading: false,
-            page: 'login'
+            page: 'login',
+            renderer: null
         };
     },
     mounted() {
         this.initBackground()
+    },
+    beforeUnmount() {
+        if (this.renderer) {
+            this.renderer.setAnimationLoop(null)
+        }
     },
     methods: {
         login() {
@@ -89,6 +96,7 @@ export default {
             const scene = new THREE.Scene();
             const canvas = this.$refs.three
             const renderer = new THREE.WebGLRenderer({ canvas });
+            this.renderer = renderer
             renderer.setSize(window.innerWidth, window.innerHeight);
             const camera = new THREE.PerspectiveCamera(
                 50,

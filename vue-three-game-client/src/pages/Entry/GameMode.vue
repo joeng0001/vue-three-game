@@ -11,11 +11,13 @@
 
             <!--after pick the scene,move the camera the the game scenario-->
             <v-card-actions class="d-flex justify-space-between mt-4">
-                <v-btn class="btn" style="color:Aquamarine;" @click="() => $router.push('/entry/gameLevel?scene=Universe')">
+                <v-btn class="btn" style="color:Aquamarine;"
+                    @click="() => $router.push('/entry/gameLevel?scene=Universe')">
                     <v-tooltip activator="parent" location="bottom">Universe
                     </v-tooltip>
                     <canvas ref="universe"></canvas></v-btn>
 
+                <!--in development-->
                 <v-btn class="btn" style="color:GreenYellow;" @click="() => $router.push('/entry/gameLevel?scene=Earth')">
                     <v-tooltip activator="parent" location="bottom">Earth
                     </v-tooltip>
@@ -40,7 +42,6 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import earthTexture from '@/assets/img/earth.jpg'
 import marsTexture from '@/assets/img/mars.jpg'
 export default {
-
     mounted() {
         this.initUniverseBtn()
         this.initEarthBtn()
@@ -48,7 +49,15 @@ export default {
     },
     data() {
         return {
-            dialog: true
+            dialog: true,
+            renderer: []
+        }
+    },
+    beforeUnmount() {
+        if (this.renderer) {
+            this.renderer.forEach(renderer => {
+                renderer.setAnimationLoop(null)
+            })
         }
     },
     methods: {
@@ -57,6 +66,7 @@ export default {
             const scene = new THREE.Scene();
             const canvas = this.$refs.universe
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            this.renderer.push(renderer)
             const blackholeUrl = new URL('@/assets/model/blackhole.glb', import.meta.url)
             renderer.setSize(100, 100);
             const camera = new THREE.PerspectiveCamera(
@@ -106,6 +116,7 @@ export default {
             const scene = new THREE.Scene();
             const canvas = this.$refs.earth
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            this.renderer.push(renderer)
             renderer.setSize(100, 100);
             const camera = new THREE.PerspectiveCamera(
                 45,
@@ -136,6 +147,7 @@ export default {
             const scene = new THREE.Scene();
             const canvas = this.$refs.mars
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            this.renderer.push(renderer)
             renderer.setSize(100, 100);
             const camera = new THREE.PerspectiveCamera(
                 45,
@@ -161,7 +173,7 @@ export default {
             }
 
             renderer.setAnimationLoop(animate);
-        }
+        },
     }
 }
 

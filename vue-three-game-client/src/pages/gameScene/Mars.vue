@@ -7,12 +7,12 @@
             <div class="bar">
                 <div class="score"> Score: &nbsp;{{ score }}/{{ maxScore }} </div>
                 <div style="display:flex;align-items: center;justify-content: space-between;">
-                    <span>Oil: </span>
+                    <span color="cyan">Oil: </span>
                     <v-progress-linear :model-value="oil" :max="maxOil" bg-color="white" color="success" class="oilBar" />
 
                 </div>
                 <div style="display:flex;align-items: center;justify-content: space-between;">
-                    <span>Energy: </span>
+                    <span color="cyan">Energy: </span>
                     <v-progress-linear :model-value="energy" :max="maxEnergy" bg-color="white" color="primary"
                         class="oilBar" />
 
@@ -36,6 +36,7 @@ import * as YUKA from 'yuka'
 import Loading from '@/components/Loading.vue'
 import { threeToCannon, ShapeType } from 'three-to-cannon';
 import http from "@/http.js"
+import store from "@/store.js"
 
 class Car {
     constructor(scene, world, maxOil, maxEnergy, level, camera, loading) {
@@ -413,7 +414,9 @@ export default {
                 rock: false,
                 UFO: false
             },
-            datGUI: null
+            datGUI: null,
+            renderer: null,
+            statsDom: null
         }
     },
     mounted() {
@@ -425,6 +428,12 @@ export default {
     beforeUnmount() {
         if (this.datGUI) {
             this.datGUI.destroy()
+        }
+        if (this.renderer) {
+            this.renderer.setAnimationLoop(null);
+        }
+        if (this.statsDom) {
+            document.body.removeChild(this.statsDom)
         }
     },
     computed: {
@@ -438,10 +447,9 @@ export default {
     methods: {
         async initScene() {
             const level = this.level
-            let stats = new Stats();
-            stats.showPanel(0);
-            const statsDom = this.$refs.statsDom
-            statsDom.appendChild(stats.dom);
+            const stats = new Stats()
+            this.statsDom = stats.dom
+            document.body.appendChild(stats.dom)
             const canvas = this.$refs.three
             const scene = new THREE.Scene()
             const world = new CANNON.World({
@@ -625,6 +633,7 @@ export default {
             const renderer = new THREE.WebGLRenderer({
                 canvas: canvas
             })
+            this.renderer = renderer
             renderer.setSize(window.innerWidth, window.innerHeight)
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
             renderer.shadowMap.enabled = true
@@ -724,7 +733,7 @@ export default {
             renderer.setAnimationLoop(tick);
         },
         async initConfigData() {
-            await http.getMarsConfig(this.level)
+            await http.getMarsConfig(this.level, store.state.userID, this.$route.query.profileID)
                 .then(res => {
                     res = JSON.parse(res)
                     for (const key in res) {

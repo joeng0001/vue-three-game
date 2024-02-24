@@ -57,11 +57,11 @@ export default {
   logout() {
     return fetchFnc("/api/Users/logout", "POST", {});
   },
-  getMarsConfig(lv) {
-    return fetchFnc(`/api/Config/Mars/${lv}`);
+  getMarsConfig(lv, userId, profileId) {
+    return fetchFnc(`/api/Config/Mars/${lv}/${userId}/${profileId}`);
   },
-  getUniverseConfig(lv) {
-    return fetchFnc(`/api/Config/Universe/${lv}`);
+  getUniverseConfig(lv, userId, profileId) {
+    return fetchFnc(`/api/Config/Universe/${lv}/${userId}/${profileId}`);
   },
   addSpaceShipProfile(userId, data) {
     return fetchFnc("/api/Config/addSpaceShipProfile/" + userId, "POST", data);

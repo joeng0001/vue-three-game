@@ -1,63 +1,52 @@
 import { createWebHistory, createRouter } from "vue-router";
-import Entry from "@/pages/Entry/Entry.vue";
-import GameScene from "@/pages/gameScene/GameScene.vue";
 import store from "@/store";
-
-import GameMode from "@/pages/Entry/GameMode.vue";
-import GameLevel from "@/pages/Entry/GameLevel.vue";
-import GameVehicle from "@/pages/Entry/GameVehicle.vue";
-
-import Universe from "@/pages/gameScene/Universe.vue";
-import Earth from "@/pages/gameScene/Earth.vue";
-import Mars from "@/pages/gameScene/Mars.vue";
-
-import Login from "@/pages/Login.vue";
 
 const routes = [
   {
     name: "login",
     path: "/login",
-    component: Login,
+    component: () => import("@/pages/Login.vue"),
   },
   {
     path: "/entry",
-    component: Entry,
+    component: () => import("@/pages/Entry/Entry.vue"),
     children: [
       {
         name: "entry.gameMode",
         path: "gameMode",
-        component: GameMode,
+        component: () => import("@/pages/Entry/GameMode.vue"),
       },
       {
         name: "entry.gameLevel",
         path: "gameLevel",
-        component: GameLevel,
+        component: () => import("@/pages/Entry/GameLevel.vue"),
       },
       {
         name: "entry.gameVehicle",
         path: "gameVehicle",
-        component: GameVehicle,
+        component: () => import("@/pages/Entry/GameVehicle.vue"),
+        props: true,
       },
     ],
   },
   {
     path: "/gameScene",
-    component: GameScene,
+    component: () => import("@/pages/gameScene/GameScene.vue"),
     children: [
       {
         name: "scene.Universe",
         path: "Universe",
-        component: Universe,
+        component: () => import("@/pages/gameScene/Universe.vue"),
       },
       {
         name: "scene.Earth",
         path: "Earth",
-        component: Earth,
+        component: () => import("@/pages/gameScene/Earth.vue"),
       },
       {
         name: "scene.Mars",
         path: "Mars",
-        component: Mars,
+        component: () => import("@/pages/gameScene/Mars.vue"),
       },
     ],
   },

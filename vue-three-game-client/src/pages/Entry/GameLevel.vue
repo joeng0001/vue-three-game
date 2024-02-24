@@ -14,10 +14,9 @@
                 <v-container>
                     <v-row>
                         <v-col cols="3" v-for="(color, i) in color_list">
-                            <v-btn class="btn" :style="{ color: color }"
-                                @click="() => $router.push(`/entry/gameVehicle?scene=${$route.query.scene}&level=${i + 1}`)">{{
-                                    i + 1
-                                }}</v-btn>
+                            <v-btn class="btn" :style="{ color: color }" @click="() => navigation(i)">{{
+                                i + 1
+                            }}</v-btn>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -47,6 +46,15 @@ export default {
                 "DeepPink",
                 "magenta"
             ]
+        }
+    },
+    methods: {
+        navigation(i) {
+            if (this.$route.query.scene == 'Earth') {
+                this.$router.push(`/gameScene/${this.$route.query.scene}?level = ${this.$route.query.level}`)
+            } else {
+                this.$router.push(`/entry/gameVehicle?scene=${this.$route.query.scene}&level=${i + 1}`)
+            }
         }
     }
 }

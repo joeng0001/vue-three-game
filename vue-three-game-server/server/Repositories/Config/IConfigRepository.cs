@@ -7,6 +7,8 @@ namespace server.Repositories
 
         SpaceShipProfileRes GetSpaceShipProfileByID(User user,int id);
 
+        MarsRoverProfileRes GetMarsRoverProfileByID(User user, int id);
+
         Task<Boolean> AddSpaceShipProfile(User user, SpaceShipProfileReq s);
 
         Task<Boolean> AddMarsRoverProfile(User user, MarsRoverProfileReq s);

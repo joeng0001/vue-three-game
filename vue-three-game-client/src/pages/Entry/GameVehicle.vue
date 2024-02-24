@@ -21,7 +21,7 @@
 
                                 </v-col>
                             </v-row>
-                            <div v-if="$route.query.scene = 'Universe'">
+                            <div v-if="$route.query.scene == 'Universe'">
                                 <v-row>
                                     <v-col cols="2">
                                         Ammo
@@ -86,7 +86,7 @@
                             <div v-else>
                                 <v-row>
                                     <v-col cols="2">
-                                        Ammo
+                                        Oil
                                     </v-col>
                                     <v-col cols="9">
                                         <v-slider min="0" max="10" :step="1" name="ammo"
@@ -148,6 +148,11 @@ export default {
     mounted() {
         this.initModelDisplay()
     },
+    beforeUnmount() {
+        if (this.renderer) {
+            this.renderer.setAnimationLoop(null)
+        }
+    },
     data() {
         return {
             dialog: true,
@@ -160,7 +165,8 @@ export default {
                 text: "",
                 color: "blue-grey"
             },
-            loading: false
+            loading: false,
+            renderer: null,
         }
     },
     created() {
@@ -172,6 +178,7 @@ export default {
             const scene = new THREE.Scene();
             const canvas = this.$refs.vehicle
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            this.renderer = renderer
             const spaceShipUrl = new URL('@/assets/model/spaceShip.glb', import.meta.url)
             renderer.setSize(500, 500);
             const camera = new THREE.PerspectiveCamera(

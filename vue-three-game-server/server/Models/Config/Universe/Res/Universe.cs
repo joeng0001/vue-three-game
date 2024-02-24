@@ -1,20 +1,23 @@
-﻿namespace server.Models.Config.Universe
+﻿using server.Model;
+
+namespace server.Models.Config.Universe
 {
     public class Universe
     {
-        public Universe(int level = 1)
+        public Universe(SpaceShipProfileRes profile,int level = 1)
         {
-            ammo = 50 + level * 5;
-            life = 50 + level * 5;
-            energy = 60 - level * 5;
+            ammo = profile!=null?profile.ammo:50 + level * 5;
+            life = profile != null ? profile.life : 50 + level * 5;
+            energy = profile != null ? profile.energy : 60 - level * 5;
+            energyConsume = profile != null ? profile.energyConsume : 0.01 * level;
+            lifeConsume = profile != null ? profile.lifeConsume : 0.001 * level;
+
             maxLife = 50 + level * 5;
             maxAmmo = 50 + level * 5;
             maxEnergy = 60 - level * 5;
             maxScore = 20 + level * 2;
             maxMeteorNumber = 10 + level * 15;
-            energyConsume = 0.01 * level;
-            lifeConsume = 0.001 * level;
-
+            
             blackHole = new BlackHole(level);
         }
 

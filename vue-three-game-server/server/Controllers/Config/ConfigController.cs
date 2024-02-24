@@ -28,16 +28,38 @@ namespace server.Controllers.Config
             _userRepository = userRepository;
         }
 
-        [HttpGet("Universe/{lv}")]
-        public ActionResult<Universe> GetUniverseConfig(int lv)
+        [HttpGet("Universe/{lv}/{userID}/{profileID}")]
+        public async Task<ActionResult<Universe>> GetUniverseConfig(int lv,int userID,int profileID)
         {
-            return Ok(new Universe(lv));
+            User user = await _userRepository.Get(userID);
+            if (user == null)
+            {
+                return NotFound("User not exist");
+            }
+
+            SpaceShipProfileRes profile = _configRepository.GetSpaceShipProfileByID(user, profileID);
+            if (profile == null)
+            {
+                return NotFound("Profile not exist");
+            }
+            return Ok(new Universe(profile,lv));
         }
 
-        [HttpGet("Mars/{lv}")]
-        public ActionResult<Mars> GetMarsConfig(int lv)
+        [HttpGet("Mars/{lv}/{userID}/{profileID}")]
+        public async Task<ActionResult<Mars>> GetMarsConfig(int lv,int userID,int profileID)
         {
-            return Ok(new Mars(lv));
+            User user = await _userRepository.Get(userID);
+            if (user == null)
+            {
+                return NotFound("User not exist");
+            }
+
+            MarsRoverProfileRes profile = _configRepository.GetMarsRoverProfileByID(user, profileID);
+            if (profile == null)
+            {
+                return NotFound("Profile not exist");
+            }
+            return Ok(new Mars(profile,lv));
         }
 
         [HttpGet("test/{userID}/{profile_id}")]

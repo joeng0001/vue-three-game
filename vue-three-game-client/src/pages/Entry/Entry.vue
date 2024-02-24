@@ -10,11 +10,19 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-
 import gsap from 'gsap'
 export default {
+    data() {
+        return {
+            renderer: null
+        }
+    },
+    beforeUnmount() {
+        if (this.renderer) {
+            this.renderer.setAnimationLoop(null)
+        }
+    },
     mounted() {
-
         const spaceStationUrl = new URL('@/assets/model/space_station_3.glb', import.meta.url)
         const galaxyUrl = new URL('@/assets/model/galaxy.glb', import.meta.url)
         const asteroidUrl = new URL('@/assets/model/asteroid.glb', import.meta.url)
@@ -22,6 +30,7 @@ export default {
         const scene = new THREE.Scene();
         const canvas = this.$refs.three
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        this.renderer = renderer
         renderer.setSize(window.innerWidth, window.innerHeight);
         const camera = new THREE.PerspectiveCamera(
             50,
@@ -36,9 +45,6 @@ export default {
         camera.position.set(-1.8, 1.6, 5);
         camera.lookAt(0, 0, 0);
 
-        // const axesHelper = new THREE.AxesHelper(100);
-        // scene.add(axesHelper);
-
         const ambient = new THREE.AmbientLight(0xFFFFFF, 0.1);
         scene.add(ambient);
 
@@ -48,10 +54,7 @@ export default {
 
         const gltfLoader = new GLTFLoader();
 
-        renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-
-
 
         gltfLoader.load(galaxyUrl.href, function (gltf) {
             const model = gltf.scene;
@@ -174,6 +177,11 @@ export default {
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+    },
+    onBeforeUnmount() {
+        if (this.renderer) {
+            this.renderer.setAnimationLoop(null)
+        }
     },
     data() {
         return {

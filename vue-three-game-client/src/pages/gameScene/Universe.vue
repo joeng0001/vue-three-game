@@ -31,7 +31,6 @@
                 <v-card-text>
                     {{ endGame.message }}
                 </v-card-text>
-
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn text="Try Again" v-show="endGame.win"></v-btn>
@@ -52,6 +51,7 @@ import starsTexture from '@/assets/img/space2.jpg';
 import Stats from 'three/examples/jsm/libs/stats.module'
 import Loading from "@/components/Loading.vue"
 import http from "@/http.js"
+import store from "@/store.js"
 export default {
     components: { Loading },
     mounted() {
@@ -136,8 +136,19 @@ export default {
                 endGameDialog: false,
                 endGameWin: false,
                 endGameMessage: ""
-            }
+            },
+            renderer: null,
+            statsDom: null
         }
+    },
+    beforeUnmount() {
+        if (this.renderer) {
+            this.renderer.setAnimationLoop(null)
+        }
+        if (this.statsDom) {
+            document.body.removeChild(this.statsDom)
+        }
+
     },
     methods: {
         async initScene() {
@@ -152,6 +163,7 @@ export default {
             const scene = new THREE.Scene();
             const canvas = this.$refs.three
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            this.renderer = renderer
             let spaceShipAnimationMixer = null
             const clock = new THREE.Clock();
 
@@ -185,6 +197,7 @@ export default {
             scene.add(axesHelper);
 
             const stats = new Stats()
+            this.statsDom = stats.dom
             document.body.appendChild(stats.dom)
 
             const cubeTextureLoader = new THREE.CubeTextureLoader();
@@ -284,9 +297,6 @@ export default {
                 }
                 this.loading.meteor[2] = false
             });
-
-
-
 
             //load blackhole
             const blackholeUrl = new URL('@/assets/model/blackhole.glb', import.meta.url)
@@ -679,7 +689,6 @@ export default {
             renderer.render(scene, camera);
             function animate() {
                 stats.begin();
-
                 //detection
                 collisionHandler()
                 detectPositionTooFarHandler()
@@ -742,7 +751,7 @@ export default {
             this.$router.push({ path: '/Entry/gameMode' })
         },
         async initConfigData() {
-            await http.getUniverseConfig(this.level)
+            await http.getUniverseConfig(this.level, store.state.userID, this.$route.query.profileID)
                 .then(res => {
                     res = JSON.parse(res)
                     for (const key in res) {
