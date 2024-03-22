@@ -25,7 +25,7 @@ export default {
             this.datGUI.destroy()
         }
         if (this.renderer) {
-            renderer.setAnimationLoop(null);
+            this.renderer.setAnimationLoop(null);
         }
     },
     methods: {
